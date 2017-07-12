@@ -22,10 +22,35 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: new MyHomePage(title: 'MAH Schema'),
+      routes: <String, WidgetBuilder> {
+        '/b': (BuildContext context) => new SchedulePage(title: "Bengt")
+      }
     );
   }
 }
 
+class SchedulePage extends StatefulWidget {
+  final String title;
+
+  SchedulePage({Key k, this.title}) : super(key: k);
+
+  @override
+  _SchedulePageState createState() => new _SchedulePageState();
+}
+
+class _SchedulePageState extends State<SchedulePage>{
+
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+            title: new Text(widget.title)
+        ),
+        body: new Text("lolz")
+    );
+  }
+}
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -90,6 +115,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(widget.title),
+        actions: <Widget> [
+          new IconButton(
+              icon: new Icon(Icons.android),
+              tooltip: "Test button to show another view",
+              onPressed: () {
+                Navigator.of(context).pushNamed('/b');
+              },
+          )],
       ),
       body: buildSearch(),
     );
