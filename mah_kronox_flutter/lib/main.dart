@@ -45,35 +45,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _MyHomePageState() {
     new Observable<String>(onTextChanged)
-    // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
+        // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
         .distinct((String prev, String next) => prev == next)
-    // Use debounce() to prevent calling the server on fast following keystrokes
+        // Use debounce() to prevent calling the server on fast following keystrokes
         .debounce(const Duration(milliseconds: 250))
-    // Use call(onData) to clear the previous results / errors and begin showing the loading state
+        // Use call(onData) to clear the previous results / errors and begin showing the loading state
         .doOnEach((var _) {
-      setState(() {
-        hasError = false;
-        isLoading = true;
-        searchResults = null;
-      });
-    })
+          setState(() {
+            hasError = false;
+            isLoading = true;
+            searchResults = null;
+          });
+        })
         .flatMapLatest((String value) => fetchAutoComplete(value))
         .listen((dynamic latestResult) {
-      debugPrint(latestResult.toString());
-      // If a result has been returned, disable the loading and error states and save the latest result
-      setState(() {
-        isLoading = false;
-        hasError = false;
-        searchResults = latestResult;
-      });
-    }, onError: (dynamic e) {
-      debugPrint("ERROR: ${e.toString()}");
-      setState(() {
-        isLoading = false;
-        hasError = true;
-        searchResults = null;
-      });
-    }, cancelOnError: false);
+          debugPrint(latestResult.toString());
+          // If a result has been returned, disable the loading and error states and save the latest result
+          setState(() {
+            isLoading = false;
+            hasError = false;
+            searchResults = latestResult;
+          });
+        }, onError: (dynamic e) {
+          debugPrint("ERROR: ${e.toString()}");
+          setState(() {
+            isLoading = false;
+            hasError = true;
+            searchResults = null;
+          });
+        }, cancelOnError: false);
   }
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
