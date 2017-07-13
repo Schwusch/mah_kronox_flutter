@@ -16,7 +16,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
-  dynamic searchResults;
+  List searchResults;
   bool hasError = false;
   bool isLoading = false;
 
@@ -35,7 +35,7 @@ class _SearchPageState extends State<SearchPage> {
       });
     })
         .flatMapLatest((String value) => fetchAutoComplete(value))
-        .listen((dynamic latestResult) {
+        .listen((List latestResult) {
       debugPrint(latestResult.toString());
       // If a result has been returned, disable the loading and error states and save the latest result
       setState(() {
@@ -64,50 +64,57 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
 
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-        actions: <Widget> [
-          new IconButton(
-            icon: new Icon(Icons.android),
-            tooltip: "Test button to show another view",
-            onPressed: () {
-              Navigator.of(context).pushNamed('/schedule');
-            },
-          )],
-      ),
-      body: buildSearch(),
+    return new IconTheme(
+        data: new IconThemeData(color: Theme.of(context).accentColor),
+        child: new Scaffold(
+          appBar: new AppBar(
+            title: new Text(widget.title),
+            actions: <Widget> [
+              new IconButton(
+                icon: new Icon(Icons.android),
+                tooltip: "Test button to show another view",
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/schedule');
+                },
+              )],
+          ),
+          body: buildSearch(),
+          floatingActionButton: new FloatingActionButton(
+              child: new Icon(Icons.info),
+              onPressed: () => showAboutDialog(
+                  context: context,
+                  applicationName: "MAH Schema",
+                  applicationVersion: "0.0.1",
+              )),
+        )
     );
   }
 
   Widget buildSearch() {
-    return new IconTheme(
-        data: new IconThemeData(color: Theme.of(context).accentColor),
-        child: new Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: new Column(
+    return new Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: new Column(
+        children: <Widget>[
+          new Row(
               children: <Widget>[
-                new Row(
-                    children: <Widget>[
-                      new Flexible(
-                        child: new TextField(
-                          onChanged: onTextChanged,
-                          decoration: new InputDecoration.collapsed(
-                              hintText: "Search for program or course"),
-                        ),
-                      ),
-                      new Container(
-                          margin: new EdgeInsets.symmetric(horizontal: 4.0),
-                          child: new Icon(Icons.search)
-                      ),
-                    ]
+                new Flexible(
+                  child: new TextField(
+                    onChanged: onTextChanged,
+                    decoration: new InputDecoration.collapsed(
+                        hintText: "Search for program or course"),
+                  ),
                 ),
-                new Text(
-                    searchResults == null ? "Nothing..." : searchResults.length == 0 ? "No results" : searchResults[0]["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")
-                )
-              ],
-            )
-        )
+                new Container(
+                    margin: new EdgeInsets.symmetric(horizontal: 4.0),
+                    child: new Icon(Icons.search)
+                ),
+              ]
+          ),
+          new Text(
+              searchResults == null ? "Nothing..." : searchResults.length == 0 ? "No results" : searchResults[0]["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")
+          )
+        ],
+      )
     );
   }
 }
