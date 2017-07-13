@@ -5,6 +5,7 @@ import "package:dslink_schedule/ical.dart";
 
 import 'SchedulePage.dart';
 import 'SearchPage.dart';
+import 'SettingsPage.dart';
 
 void main() {
   runApp(new MyApp());
@@ -15,13 +16,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'MAH Schema',
+      title: 'Schemavisning',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
-      home: new SearchPage(title: 'MAH Schema'),
       routes: <String, WidgetBuilder> {
-        '/schedule': (BuildContext context) => new SchedulePage(title: "MAH Schema")
+        '/': (BuildContext context) => new SchedulePage(title: "Schemavisning"),
+        '/settings': (BuildContext context) => new SettingsPage(title: "Inställingar"),
+        '/searchpage': (BuildContext context) => new SearchPage(title: "Sök")
       }
     );
   }

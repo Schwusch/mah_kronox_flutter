@@ -69,14 +69,6 @@ class _SearchPageState extends State<SearchPage> {
         child: new Scaffold(
           appBar: new AppBar(
             title: new Text(widget.title),
-            actions: <Widget> [
-              new IconButton(
-                icon: new Icon(Icons.android),
-                tooltip: "Test button to show another view",
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/schedule');
-                },
-              )],
           ),
           body: buildSearch(),
           floatingActionButton: new FloatingActionButton(

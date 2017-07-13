@@ -16,9 +16,18 @@ class _SchedulePageState extends State<SchedulePage>{
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: new AppBar(
-            title: new Text(widget.title)
+            title: new Text(widget.title),
+            actions: <Widget> [
+              new IconButton(
+                icon: new Icon(Icons.settings),
+                tooltip: "Test button to show another view",
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/settings');
+                },
+              )],
         ),
-        body: new Text("lolz")
+        body: new Text("Här ska ens schema visas")
     );
   }
 }
+
