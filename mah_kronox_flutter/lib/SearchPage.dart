@@ -8,6 +8,7 @@ class SearchPage extends StatefulWidget {
   SearchPage({Key key, this.title}) : super(key: key);
 
   final String title;
+  static final String path = "/searchpage";
 
   @override
   _SearchPageState createState() => new _SearchPageState();

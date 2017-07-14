@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
+  static final String path = "/";
 
   SchedulePage({Key k, this.title}) : super(key: k);
 
