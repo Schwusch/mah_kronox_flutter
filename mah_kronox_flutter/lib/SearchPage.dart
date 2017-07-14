@@ -16,22 +16,22 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
-  List searchResults;
+  final List<ListTile> searchResults = <ListTile>[];
   bool hasError = false;
   bool isLoading = false;
 
   _SearchPageState() {
     new Observable<String>(onTextChanged)
-    // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
+        // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
         .distinct((String prev, String next) => prev == next)
-    // Use debounce() to prevent calling the server on fast following keystrokes
+        // Use debounce() to prevent calling the server on fast following keystrokes
         .debounce(const Duration(milliseconds: 250))
-    // Use call(onData) to clear the previous results / errors and begin showing the loading state
+        // Use call(onData) to clear the previous results / errors and begin showing the loading state
         .doOnEach((var _) {
       setState(() {
         hasError = false;
         isLoading = true;
-        searchResults = null;
+        searchResults.clear();
       });
     })
         .flatMapLatest((String value) => fetchAutoComplete(value))
@@ -41,14 +41,23 @@ class _SearchPageState extends State<SearchPage> {
       setState(() {
         isLoading = false;
         hasError = false;
-        searchResults = latestResult;
+        if(latestResult.isNotEmpty) {
+          searchResults.addAll(
+              latestResult.map((result) =>
+                new ListTile(
+                    title: new Text(result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")),
+                    leading: new Icon(Icons.add),
+                )
+              )
+          );
+        }
       });
     }, onError: (dynamic e) {
       debugPrint("ERROR: ${e.toString()}");
       setState(() {
         isLoading = false;
         hasError = true;
-        searchResults = null;
+        searchResults.clear();
       });
     }, cancelOnError: false);
   }
@@ -70,14 +79,24 @@ class _SearchPageState extends State<SearchPage> {
           appBar: new AppBar(
             title: new Text(widget.title),
           ),
-          body: buildSearch(),
-          floatingActionButton: new FloatingActionButton(
-              child: new Icon(Icons.info),
-              onPressed: () => showAboutDialog(
-                  context: context,
-                  applicationName: "MAH Schema",
-                  applicationVersion: "0.0.1",
-              )),
+          body: new Column(
+              children: <Widget>[
+                new Flexible(
+                    child: new ListView.builder(
+                      padding: new EdgeInsets.all(8.0),
+                      reverse: false,
+                      itemBuilder: (_, index) => searchResults[index],
+                      itemCount: searchResults.length,
+                    )
+                ),
+                new Divider(height: 1.0),
+                new Container(
+                  decoration: new BoxDecoration(
+                      color: Theme.of(context).cardColor),
+                  child: buildSearch(),
+                ),
+              ]
+          ),
         )
     );
   }
@@ -85,28 +104,21 @@ class _SearchPageState extends State<SearchPage> {
   Widget buildSearch() {
     return new Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: new Column(
+      child: new Row(
         children: <Widget>[
-          new Row(
-              children: <Widget>[
-                new Flexible(
-                  child: new TextField(
-                    onChanged: onTextChanged,
-                    decoration: new InputDecoration.collapsed(
-                        hintText: "Search for program or course"),
-                  ),
-                ),
-                new Container(
-                    margin: new EdgeInsets.symmetric(horizontal: 4.0),
-                    child: new Icon(Icons.search)
-                ),
-              ]
+          new Flexible(
+            child: new TextField(
+              onChanged: onTextChanged,
+              decoration: new InputDecoration.collapsed(
+                  hintText: "Search for program or course"),
+            ),
           ),
-          new Text(
-              searchResults == null ? "Nothing..." : searchResults.length == 0 ? "No results" : searchResults[0]["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")
-          )
-        ],
-      )
+          new Container(
+              margin: new EdgeInsets.symmetric(horizontal: 4.0),
+              child: new Icon(Icons.search)
+          ),
+        ]
+      ),
     );
   }
 }
