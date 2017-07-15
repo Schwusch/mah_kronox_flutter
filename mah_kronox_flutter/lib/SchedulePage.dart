@@ -27,7 +27,19 @@ class _SchedulePageState extends State<SchedulePage>{
                 },
               )],
         ),
-        body: new Text("Här ska ens schema visas")
+        body: new Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              new Card(
+                  child: new Text("First post")
+              ),
+              new Card(
+                  child: new Text("second post")
+              )
+            ],
+        )
     );
   }
 }
