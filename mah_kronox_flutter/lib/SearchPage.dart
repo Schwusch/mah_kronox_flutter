@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:rxdart/rxdart.dart';
@@ -20,10 +21,10 @@ class _SearchPageState extends State<SearchPage> {
   final List<Widget> searchResults = <Widget>[];
   final TextEditingController _textController = new TextEditingController();
   Choice _selectedChoice = choices[0]; // The app's "state".
-
+  StreamSubscription searchStream;
 
   _SearchPageState() {
-    new Observable<String>(onTextChanged)
+    searchStream = new Observable<String>(onTextChanged)
         // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
         .distinct((String prev, String next) => prev == next)
         // Use debounce() to prevent calling the server on fast following keystrokes
@@ -56,6 +57,12 @@ class _SearchPageState extends State<SearchPage> {
             searchResults.clear();
           });
         }, cancelOnError: false);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    searchStream.cancel();
   }
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
