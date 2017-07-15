@@ -17,9 +17,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
-  final List<ListTile> searchResults = <ListTile>[];
-  bool hasError = false;
-  bool isLoading = false;
+  final List<Widget> searchResults = <Widget>[];
 
   _SearchPageState() {
     new Observable<String>(onTextChanged)
@@ -27,40 +25,35 @@ class _SearchPageState extends State<SearchPage> {
         .distinct((String prev, String next) => prev == next)
         // Use debounce() to prevent calling the server on fast following keystrokes
         .debounce(const Duration(milliseconds: 250))
-        // Use call(onData) to clear the previous results / errors and begin showing the loading state
         .doOnEach((var _) {
-      setState(() {
-        hasError = false;
-        isLoading = true;
-        searchResults.clear();
-      });
-    })
+          setState(() {
+            searchResults.clear();
+          });
+        })
+        .where((String str) => str.isNotEmpty)
+        .doOnEach((var _) {
+          setState(() {
+            searchResults.add(new Center(child: new CircularProgressIndicator()));
+          });
+        })
         .flatMapLatest((String value) => fetchAutoComplete(value))
         .listen((List latestResult) {
-      debugPrint(latestResult.toString());
-      // If a result has been returned, disable the loading and error states and save the latest result
-      setState(() {
-        isLoading = false;
-        hasError = false;
-        if(latestResult.isNotEmpty) {
-          searchResults.addAll(
-              latestResult.map((result) =>
-                new ListTile(
-                    title: new Text(result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")),
-                    leading: new Icon(Icons.add),
-                )
-              )
-          );
-        }
-      });
-    }, onError: (dynamic e) {
-      debugPrint("ERROR: ${e.toString()}");
-      setState(() {
-        isLoading = false;
-        hasError = true;
-        searchResults.clear();
-      });
-    }, cancelOnError: false);
+          // If a result has been returned, disable the loading and error states and save the latest result
+          setState(() {
+            searchResults.clear();
+            if(latestResult.isNotEmpty) {
+              searchResults.addAll(
+                  latestResult.map((result) => buildResultCard(result)
+                  )
+              );
+            }
+          });
+        }, onError: (dynamic e) {
+          debugPrint("ERROR: ${e.toString()}");
+          setState(() {
+            searchResults.clear();
+          });
+        }, cancelOnError: false);
   }
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
@@ -78,7 +71,7 @@ class _SearchPageState extends State<SearchPage> {
         data: new IconThemeData(color: Theme.of(context).accentColor),
         child: new Scaffold(
           appBar: new AppBar(
-            title: new Text(widget.title),
+            title: buildSearch(),
           ),
           body: new Column(
               children: <Widget>[
@@ -89,13 +82,7 @@ class _SearchPageState extends State<SearchPage> {
                       itemBuilder: (_, index) => searchResults[index],
                       itemCount: searchResults.length,
                     )
-                ),
-                new Divider(height: 1.0),
-                new Container(
-                  decoration: new BoxDecoration(
-                      color: Theme.of(context).cardColor),
-                  child: buildSearch(),
-                ),
+                )
               ]
           ),
         )
@@ -109,6 +96,8 @@ class _SearchPageState extends State<SearchPage> {
         children: <Widget>[
           new Flexible(
             child: new TextField(
+              style: new TextStyle(fontSize: 20.0),
+              autofocus: true,
               onChanged: onTextChanged,
               decoration: new InputDecoration.collapsed(
                   hintText: "Search for program or course"),
@@ -119,6 +108,31 @@ class _SearchPageState extends State<SearchPage> {
               child: new Icon(Icons.search)
           ),
         ]
+      ),
+    );
+  }
+
+  Widget buildResultCard(Map result) {
+    return new Card(
+      child: new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new ListTile(
+            leading: const Icon(Icons.schedule),
+            title: new Text(result["value"]),
+            subtitle: new Text(result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")),
+          ),
+          new ButtonTheme.bar(
+            child: new ButtonBar(
+              children: <Widget>[
+                new FlatButton(
+                  child: const Text('Lägg till schema'),
+                  onPressed: () { /* ... */ },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
