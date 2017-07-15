@@ -52,7 +52,6 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  var _subscription;
   var _themeSubscription;
 
   _AppState() {
@@ -64,7 +63,6 @@ class _AppState extends State<App> {
   @override
   void dispose() {
     super.dispose();
-    _subscription.cancel();
     _themeSubscription.cancel();
   }
 
