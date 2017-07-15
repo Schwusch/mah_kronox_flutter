@@ -68,6 +68,8 @@ class _SearchPageState extends State<SearchPage> {
 
   void _select(Choice choice) {
     setState(() { // Causes the app to rebuild with the new _selectedChoice.
+      _textController.clear();
+      searchResults.clear();
       _selectedChoice = choice;
     });
   }
