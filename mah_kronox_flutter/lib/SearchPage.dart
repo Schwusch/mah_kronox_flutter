@@ -18,6 +18,9 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
   final List<Widget> searchResults = <Widget>[];
+  final TextEditingController _textController = new TextEditingController();
+  Choice _selectedChoice = choices[0]; // The app's "state".
+
 
   _SearchPageState() {
     new Observable<String>(onTextChanged)
@@ -38,7 +41,6 @@ class _SearchPageState extends State<SearchPage> {
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
         .listen((List latestResult) {
-          // If a result has been returned, disable the loading and error states and save the latest result
           setState(() {
             searchResults.clear();
             if(latestResult.isNotEmpty) {
@@ -59,9 +61,15 @@ class _SearchPageState extends State<SearchPage> {
   Observable<dynamic> fetchAutoComplete(String searchString) {
     var httpClient = createHttpClient();
     return  new Observable<String>.fromFuture(
-        httpClient.read("https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=program&term=${searchString}")
+        httpClient.read("https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}")
     )
         .map((String response) => JSON.decode(response));
+  }
+
+  void _select(Choice choice) {
+    setState(() { // Causes the app to rebuild with the new _selectedChoice.
+      _selectedChoice = choice;
+    });
   }
 
   @override
@@ -100,12 +108,26 @@ class _SearchPageState extends State<SearchPage> {
               autofocus: true,
               onChanged: onTextChanged,
               decoration: new InputDecoration.collapsed(
-                  hintText: "Search for program or course"),
+                  hintText: "Search for ${_selectedChoice.title}"),
+              controller: _textController,
             ),
           ),
           new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 4.0),
-              child: new Icon(Icons.search)
+              child: new IconButton(
+                  icon: _textController.text.isEmpty ? new Icon(Icons.search) : new Icon(Icons.clear),
+                  onPressed: _textController.text.isEmpty ? null : _textController.clear,
+              )
+          ),
+          new PopupMenuButton<Choice>( // overflow menu
+            onSelected: _select,
+            itemBuilder: (BuildContext context) {
+              return choices.map((Choice choice) {
+                return new PopupMenuItem<Choice>(
+                  value: choice,
+                  child: new Text(choice.title),
+                );
+              }).toList();
+            },
           ),
         ]
       ),
@@ -137,3 +159,14 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 }
+
+class Choice {
+  const Choice({ this.title, this.value });
+  final String title;
+  final String value;
+}
+
+const List<Choice> choices = const <Choice>[
+  const Choice(title: 'Program', value: 'program'),
+  const Choice(title: 'Kurs', value: 'kurs'),
+];
