@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'utils/Booking.dart';
 import 'utils/fetchBookings.dart';
 import 'package:intl/intl.dart';
+import 'utils/weekCalc.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
@@ -108,6 +109,20 @@ class _SchedulePageState extends State<SchedulePage> {
             ],
             )
     );
+  }
+
+  Widget _buildSchedule(List<Booking> bookings) {
+    // Sort bookings
+    bookings.sort((a, b) => a.start.compareTo(b.start));
+    // Split the list up in days
+
+    // Split the days up in weeks
+    int weekNbr = weekOfYear(bookings[0].start); // Example of retrieving the week
+    
+    // Build a list of week widgets
+
+    // Return a ListView with week widgets
+    return null;
   }
 
   @override
