@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'utils/Booking.dart';
+import 'utils/fetchBookings.dart';
+import 'package:intl/intl.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
@@ -11,24 +14,41 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
+  List<Booking> bookings = [];
+  DateFormat formatter = new DateFormat("HH:mm");
+  _SchedulePageState() {
+    fetchBookings("tgsya15h").then((bookings) {
+      setState(() {
+        this.bookings = bookings;
+      });
+    });
+  }
 
-  Widget _createScheduleItem() {
+  Widget _createScheduleItem(Booking booking) {
     return new Card(
 
-          elevation: 2.0,
-          child: new Row(
+      elevation: 2.0,
+      child: new Row(
+        children: <Widget>[
+          new Column(
+            children: <Widget>[
+              new Text(formatter.format(booking.start)),
+              new Text(formatter.format(booking.end)),
+              new Text(booking.location)
+            ],
+          ),
+          new Flexible(
+            child: new Column(
               children: <Widget>[
-                new Text(
-                    "tid",
-                    textAlign: TextAlign.left,
-                    ),
-                new Text(
-                    "Kurs",
-                    textAlign: TextAlign.right,
-                    )
+                new Text(booking.course),
+                new Text(booking.signatures.toString()),
+                new Text(booking.moment)
               ],
-              )
-      );
+            )
+          )
+        ],
+      )
+    );
   }
 
   Widget _createDayCard() {
@@ -53,7 +73,7 @@ class _SchedulePageState extends State<SchedulePage> {
               padding: new EdgeInsets.all(10.0),
               child: new Column(
                   children: <Widget>[
-                    _createScheduleItem()
+                    //_createScheduleItem()
                   ],
               )
           )
@@ -109,8 +129,8 @@ class _SchedulePageState extends State<SchedulePage> {
         body: new ListView.builder(
             padding: new EdgeInsets.all(10.0),
             reverse: false,
-            itemBuilder: (_, index) => _createWeekCard(),
-            itemCount: 1,
+            itemBuilder: (_, index) => _createScheduleItem(bookings[index]),
+            itemCount: bookings.length,
             )
     );
   }

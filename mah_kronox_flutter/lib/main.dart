@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
-import "package:dslink_schedule/ical.dart";
 
 import 'SchedulePage.dart';
 import 'SearchPage.dart';
@@ -20,9 +18,7 @@ void main() {
 
 Future run() async {
   runApp(new Splash());
-
   await _init();
-
   runApp(new App());
 }
 
