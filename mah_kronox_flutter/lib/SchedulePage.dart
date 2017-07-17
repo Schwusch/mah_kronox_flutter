@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'SettingsPage.dart';
+import 'SearchPage.dart';
 import 'utils/Booking.dart';
 import 'utils/fetchBookings.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +19,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   List<Booking> bookings = [];
   DateFormat formatter = new DateFormat("HH:mm");
+
   _SchedulePageState() {
     fetchBookings("tgsya15h").then((bookings) {
       setState(() {
@@ -128,25 +131,52 @@ class _SchedulePageState extends State<SchedulePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: new AppBar(
-            title: new Text(widget.title),
-            actions: <Widget>[
-              new IconButton(
-                  icon: new Icon(Icons.settings),
-                  tooltip: "Test button to show another view",
-                  onPressed: () {
-                    Navigator.of(context).pushNamed('/settings');
-                  },
-                  )
-            ],
+      appBar: new AppBar(
+          title: new Text(widget.title),
+      ),
+      body: new ListView.builder(
+          padding: new EdgeInsets.all(10.0),
+          reverse: false,
+          itemBuilder: (_, index) => _createScheduleItem(bookings[index]),
+          itemCount: bookings.length,
+      ),
+      drawer: new Drawer(
+        child: new ListView(
+          children: <Widget>[
+            new UserAccountsDrawerHeader(
+              decoration: new BoxDecoration(
+                image: new DecorationImage(
+                    image: new AssetImage("assets/images/mah.jpg"),
+                  fit: BoxFit.cover
+                )
+              ),
+              accountName: new Text("Malmö Högskola"),
+              accountEmail: null,
+              currentAccountPicture: new CircleAvatar(
+                backgroundImage: new AssetImage("assets/images/logo.jpg"),
+              ),
             ),
-
-        body: new ListView.builder(
-            padding: new EdgeInsets.all(10.0),
-            reverse: false,
-            itemBuilder: (_, index) => _createScheduleItem(bookings[index]),
-            itemCount: bookings.length,
+            new ListTile(
+              leading: new Icon(Icons.settings),
+              title: new Text("Inställningar"),
+              onTap: () {
+                Navigator.of(context).pushNamed(SettingsPage.path);
+              },
+            ),
+            new ListTile(
+              leading: new Icon(Icons.add),
+              title: new Text("Lägg till Schema"),
+              onTap: () {
+                Navigator.of(context).pushNamed(SearchPage.path);
+              },
+            ),
+            new AboutListTile(
+              applicationName: "MAH Schema",
+              applicationVersion: "0.0.1",
             )
+          ],
+        ),
+      ),
     );
   }
 }

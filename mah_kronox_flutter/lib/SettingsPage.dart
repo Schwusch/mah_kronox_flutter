@@ -38,14 +38,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return new Scaffold(
         appBar: new AppBar(
             title: new Text(widget.title),
-            actions: <Widget> [
-              new IconButton(
-                  icon: new Icon(Icons.add),
-                  tooltip: "This is the settings page",
-                  onPressed: () {
-                    Navigator.of(context).pushNamed("/searchpage");
-                  },
-                )],
         ),
         body: new ListView(children: <Widget>[
           _buildDarkModeSwitch(),
