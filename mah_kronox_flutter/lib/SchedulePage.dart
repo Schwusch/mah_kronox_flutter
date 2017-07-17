@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'SettingsPage.dart';
-import 'SearchPage.dart';
+import 'Drawer.dart';
 
 import 'utils/fetchBookings.dart';
 import 'utils/weekOfYear.dart';
@@ -174,49 +173,7 @@ class _SchedulePageState extends State<SchedulePage> {
           reverse: false,
           children: _buildSchedule(bookings),
       ),
-      drawer: new Drawer(
-        child: new ListView(
-          children: <Widget>[
-            new UserAccountsDrawerHeader(
-              decoration: new BoxDecoration(
-                image: new DecorationImage(
-                    image: new AssetImage("assets/images/mah.jpg"),
-                  fit: BoxFit.cover
-                )
-              ),
-              accountName: new Text("Malmö Högskola"),
-              accountEmail: null,
-              currentAccountPicture: new CircleAvatar(
-                backgroundImage: new AssetImage("assets/images/logo.jpg"),
-              ),
-            ),
-            new ListTile(
-              leading: new Icon(Icons.settings),
-              title: new Text("Inställningar"),
-              onTap: () {
-                Navigator.of(context).pushNamed(SettingsPage.path);
-              },
-            ),
-            new Divider(),
-            new ListTile(
-                title: new Text("Mina Sheman"),
-                dense: true
-            ),
-            new ListTile(
-              leading: new Icon(Icons.add),
-              title: new Text("Lägg till Schema"),
-              onTap: () {
-                Navigator.of(context).pushNamed(SearchPage.path);
-              },
-            ),
-            new Divider(),
-            new AboutListTile(
-              applicationName: "MAH Schema",
-              applicationVersion: "0.0.1",
-            )
-          ],
-        ),
-      ),
+      drawer: new ScheduleDrawer()
     );
   }
 }

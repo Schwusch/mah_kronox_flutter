@@ -13,3 +13,15 @@ class ChangeThemeAction extends Action {
 
   ChangeThemeAction({this.brightness, this.primaryColor, this.accentColor});
 }
+
+class AddScheduleAction extends Action {
+  final String schedule;
+
+  AddScheduleAction({this.schedule});
+}
+
+class RemoveScheduleAction extends Action {
+  final String schedule;
+
+  RemoveScheduleAction({this.schedule});
+}

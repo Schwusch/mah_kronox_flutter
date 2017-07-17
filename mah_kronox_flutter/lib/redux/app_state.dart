@@ -33,3 +33,15 @@ class ThemeState {
         accentColor: accentColor ?? this.accentColor);
   }
 }
+
+class ScheduleState {
+  final List<String> schedules;
+
+  ScheduleState({this.schedules});
+
+  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[]);
+
+  ScheduleState apply({List<String> schedules}) {
+    return new ScheduleState(schedules: schedules ?? this.schedules);
+  }
+}

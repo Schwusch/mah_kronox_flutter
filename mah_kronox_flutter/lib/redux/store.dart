@@ -11,4 +11,11 @@ class ThemeStore extends redux.Store<ThemeState, Action> {
       initialState: initialState ?? new ThemeState.initial());
 }
 
+class ScheduleStore extends redux.Store<ScheduleState, Action> {
+  ScheduleStore({ScheduleState initialState, redux.Reducer<ScheduleState, Action> reducer})
+    : super(reducer ?? new ScheduleReducer(),
+      initialState: initialState ?? new ScheduleState.initial());
+}
+
 ThemeStore themeStore;
+ScheduleStore scheduleStore;

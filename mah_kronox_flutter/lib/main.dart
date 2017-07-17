@@ -79,6 +79,8 @@ class _AppState extends State<App> {
 
 Future<Null> _init() async {
   themeStore = new ThemeStore();
+  scheduleStore = new ScheduleStore();
+  
   await initializeDateFormatting("sv_SE", null);
   SharedPreferences prefs = await SharedPreferences.getInstance();
 

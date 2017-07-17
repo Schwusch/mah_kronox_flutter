@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stream_friends/flutter_stream_friends.dart';
+import 'redux/store.dart';
+import 'redux/actions.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key, this.title}) : super(key: key);
@@ -167,9 +169,13 @@ class _SearchPageState extends State<SearchPage> {
                 new FlatButton(
                   child: const Text('Lägg till schema'),
                   onPressed: () {
+                    scheduleStore.dispatch(new AddScheduleAction(schedule: result['value']));
+
                     Scaffold.of(context).showSnackBar(new SnackBar(
                         content: new Text("Lade till " + result["value"]),
                         action: new SnackBarAction(label: "Ångra", onPressed: () {
+                          scheduleStore.dispatch(new RemoveScheduleAction(schedule: result['value']));
+
                           Scaffold.of(context).showSnackBar(new SnackBar(
                             content: new Text("Ångrade tillägning av " + result["value"]),
                           ));
