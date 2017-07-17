@@ -10,6 +10,8 @@ import 'utils/Booking.dart';
 import 'utils/Week.dart';
 import 'utils/Day.dart';
 
+import 'redux/store.dart';
+
 class SchedulePage extends StatefulWidget {
   final String title;
   static final String path = "/";
@@ -23,8 +25,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   List<Booking> bookings = [];
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
-  DateFormat weekdayFormatter = new DateFormat("EEEE", "sv_SE");
-  DateFormat dateFormatter = new DateFormat("d MMMM y");
+  DateFormat dateFormatter = new DateFormat("EEEE, MMMM d, ''yy");
 
   _SchedulePageState() {
     fetchBookings("tgsya15h").then((bookings) {
@@ -73,7 +74,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     ),
                     child: new Text(
                         day.date,
-                        textAlign: TextAlign.left,
+                        textAlign: TextAlign.center,
                     )
                 ),
               ],
@@ -85,32 +86,29 @@ class _SchedulePageState extends State<SchedulePage> {
               )
           )
         ],
-        );
+    );
   }
 
   Widget _createWeekCard(Week week) {
     List<Widget> widgets = [];
     widgets.add(new Card(
-      color: Colors.deepPurple,
+      color: themeStore.state.theme.backgroundColor,
       elevation: 3.0,
       child: new Text(
           "v.${week.number}",
           textScaleFactor: 2.5,
           textAlign: TextAlign.center,
-          style: new TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white70
-          )
       ),
     ));
 
     widgets.addAll(week.days.map((day) => _createDayCard(day)));
 
     return new Card(
-        child: new Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: widgets
-        )
+      child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: widgets
+      ),
+      color: themeStore.state.theme.canvasColor,
     );
   }
 
@@ -125,7 +123,6 @@ class _SchedulePageState extends State<SchedulePage> {
 
       Day day = new Day(
           bookings: <Booking>[lastBooking],
-          weekday: weekdayFormatter.format(lastBooking.start),
           date: dateFormatter.format(lastBooking.start)
       );
 
@@ -140,7 +137,6 @@ class _SchedulePageState extends State<SchedulePage> {
         if(weekOfYear(booking.start) != week.number) {
           day = new Day(
               bookings: <Booking>[booking],
-              weekday: weekdayFormatter.format(booking.start),
               date: dateFormatter.format(booking.start)
           );
 
@@ -153,7 +149,6 @@ class _SchedulePageState extends State<SchedulePage> {
         } else if(lastBooking.start.day != booking.start.day || lastBooking.start.month != booking.start.month) {
           day = new Day(
               bookings: <Booking>[booking],
-              weekday: weekdayFormatter.format(booking.start),
               date: dateFormatter.format(booking.start)
           );
           week.days.add(day);
