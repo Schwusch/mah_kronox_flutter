@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'SchedulePage.dart';
 import 'SearchPage.dart';
@@ -78,7 +79,7 @@ class _AppState extends State<App> {
 
 Future<Null> _init() async {
   themeStore = new ThemeStore();
-
+  await initializeDateFormatting("sv_SE", null);
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
   bool bright = prefs.getBool(ThemeState.kBrightnessKey);

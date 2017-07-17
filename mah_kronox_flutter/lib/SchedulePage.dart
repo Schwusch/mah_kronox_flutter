@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 import 'SettingsPage.dart';
 import 'SearchPage.dart';
-import 'utils/Booking.dart';
+
 import 'utils/fetchBookings.dart';
-import 'package:intl/intl.dart';
-import 'utils/weekCalc.dart';
+import 'utils/weekOfYear.dart';
+import 'utils/Booking.dart';
+import 'utils/Week.dart';
+import 'utils/Day.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
@@ -18,7 +22,9 @@ class SchedulePage extends StatefulWidget {
 
 class _SchedulePageState extends State<SchedulePage> {
   List<Booking> bookings = [];
-  DateFormat formatter = new DateFormat("HH:mm");
+  DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
+  DateFormat weekdayFormatter = new DateFormat("EEEE", "sv_SE");
+  DateFormat dateFormatter = new DateFormat("d MMMM y");
 
   _SchedulePageState() {
     fetchBookings("tgsya15h").then((bookings) {
@@ -36,8 +42,8 @@ class _SchedulePageState extends State<SchedulePage> {
         children: <Widget>[
           new Column(
             children: <Widget>[
-              new Text(formatter.format(booking.start)),
-              new Text(formatter.format(booking.end)),
+              new Text(timeFormatter.format(booking.start)),
+              new Text(timeFormatter.format(booking.end)),
               new Text(booking.location)
             ],
           ),
@@ -55,7 +61,7 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  Widget _createDayCard() {
+  Widget _createDayCard(Day day) {
     return new Column(
         children: <Widget>[
           new Row(
@@ -66,66 +72,100 @@ class _SchedulePageState extends State<SchedulePage> {
                         horizontal: 10.0
                     ),
                     child: new Text(
-                        "måndag: 56 september",
+                        day.date,
                         textAlign: TextAlign.left,
-                        )
+                    )
                 ),
-
               ],
-              ),
+          ),
           new Padding(
               padding: new EdgeInsets.all(10.0),
               child: new Column(
-                  children: <Widget>[
-                    //_createScheduleItem()
-                  ],
+                  children: day.bookings.map((booking) => _createScheduleItem(booking)).toList(growable: false)
               )
           )
         ],
         );
   }
 
-  Widget _createWeekCard() {
+  Widget _createWeekCard(Week week) {
+    List<Widget> widgets = [];
+    widgets.add(new Card(
+      color: Colors.deepPurple,
+      elevation: 3.0,
+      child: new Text(
+          "v.${week.number}",
+          textScaleFactor: 2.5,
+          textAlign: TextAlign.center,
+          style: new TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white70
+          )
+      ),
+    ));
+
+    widgets.addAll(week.days.map((day) => _createDayCard(day)));
+
     return new Card(
         child: new Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              new Card(
-                  color: Colors.deepPurple,
-                  elevation: 3.0,
-                  child: new Text(
-                      "Vecka",
-                      textScaleFactor: 2.5,
-                      textAlign: TextAlign.center,
-                      style: new TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white70
-                      )
-                  ),
-                  ),
-              _createDayCard(),
-              _createDayCard(),
-              _createDayCard(),
-              _createDayCard(),
-              _createDayCard(),
-              _createDayCard()
-            ],
-            )
+            children: widgets
+        )
     );
   }
 
-  Widget _buildSchedule(List<Booking> bookings) {
-    // Sort bookings
-    bookings.sort((a, b) => a.start.compareTo(b.start));
-    // Split the list up in days
+  List<Widget> _buildSchedule(List<Booking> bookings) {
+    List<Week> weeks = <Week>[];
 
-    // Split the days up in weeks
-    int weekNbr = weekOfYear(bookings[0].start); // Example of retrieving the week
-    
-    // Build a list of week widgets
+    if(bookings.isNotEmpty) {
+      // Sort bookings by DateTime
+      bookings.sort((a, b) => a.start.compareTo(b.start));
 
-    // Return a ListView with week widgets
-    return null;
+      Booking lastBooking = bookings.first;
+
+      Day day = new Day(
+          bookings: <Booking>[lastBooking],
+          weekday: weekdayFormatter.format(lastBooking.start),
+          date: dateFormatter.format(lastBooking.start)
+      );
+
+      Week week = new Week(
+        days: <Day>[day],
+        number: weekOfYear(lastBooking.start)
+      );
+
+      weeks.add(week);
+
+      for(Booking booking in bookings) {
+        if(weekOfYear(booking.start) != week.number) {
+          day = new Day(
+              bookings: <Booking>[booking],
+              weekday: weekdayFormatter.format(booking.start),
+              date: dateFormatter.format(booking.start)
+          );
+
+          week = new Week(
+              days: <Day>[day],
+              number: weekOfYear(booking.start)
+          );
+
+          weeks.add(week);
+        } else if(lastBooking.start.day != booking.start.day || lastBooking.start.month != booking.start.month) {
+          day = new Day(
+              bookings: <Booking>[booking],
+              weekday: weekdayFormatter.format(booking.start),
+              date: dateFormatter.format(booking.start)
+          );
+          week.days.add(day);
+        } else if (lastBooking.uuid != booking.uuid) {
+          day.bookings.add(booking);
+        }
+
+        lastBooking = booking;
+      }
+    }
+
+    return weeks.map((week) => _createWeekCard(week)).toList(growable: false);
   }
 
   @override
@@ -134,11 +174,10 @@ class _SchedulePageState extends State<SchedulePage> {
       appBar: new AppBar(
           title: new Text(widget.title),
       ),
-      body: new ListView.builder(
+      body: new ListView(
           padding: new EdgeInsets.all(10.0),
           reverse: false,
-          itemBuilder: (_, index) => _createScheduleItem(bookings[index]),
-          itemCount: bookings.length,
+          children: _buildSchedule(bookings),
       ),
       drawer: new Drawer(
         child: new ListView(
