@@ -163,6 +163,11 @@ class _SchedulePageState extends State<SchedulePage> {
                 Navigator.of(context).pushNamed(SettingsPage.path);
               },
             ),
+            new Divider(),
+            new ListTile(
+                title: new Text("Mina Sheman"),
+                dense: true
+            ),
             new ListTile(
               leading: new Icon(Icons.add),
               title: new Text("Lägg till Schema"),
@@ -170,6 +175,7 @@ class _SchedulePageState extends State<SchedulePage> {
                 Navigator.of(context).pushNamed(SearchPage.path);
               },
             ),
+            new Divider(),
             new AboutListTile(
               applicationName: "MAH Schema",
               applicationVersion: "0.0.1",

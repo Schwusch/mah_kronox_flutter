@@ -20,8 +20,8 @@ class ThemeState {
 
   factory ThemeState.initial() => new ThemeState(
       brightness: Brightness.light,
-      primaryColor: Colors.indigo,
-      accentColor: Colors.pinkAccent);
+      primaryColor: Colors.red,
+      accentColor: Colors.lightBlueAccent);
 
   ThemeState apply(
       {Brightness brightness,
