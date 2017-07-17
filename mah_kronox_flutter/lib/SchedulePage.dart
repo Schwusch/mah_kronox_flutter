@@ -24,7 +24,7 @@ class SchedulePage extends StatefulWidget {
 class _SchedulePageState extends State<SchedulePage> {
   List<Booking> bookings = [];
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
-  DateFormat dateFormatter = new DateFormat("EEEE, MMMM d, ''yy");
+  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy");
 
   _SchedulePageState() {
     fetchBookings("tgsya15h").then((bookings) {
@@ -37,14 +37,29 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget _createScheduleItem(Booking booking) {
     return new Card(
 
-      elevation: 2.0,
+      elevation: 3.0,
       child: new Row(
         children: <Widget>[
           new Column(
             children: <Widget>[
-              new Text(timeFormatter.format(booking.start)),
-              new Text(timeFormatter.format(booking.end)),
-              new Text(booking.location)
+              new Text(
+                  timeFormatter.format(booking.start),
+                  style: new TextStyle(
+                      color: Colors.blueGrey
+                  )
+              ),
+              new Text(
+                  timeFormatter.format(booking.end),
+                  style: new TextStyle(
+                      color: Colors.grey
+                  )
+                  ),
+              new Text(
+                  booking.location,
+                  style: new TextStyle(
+                      color: Colors.blueGrey,
+                  )
+              )
             ],
           ),
           new Flexible(
@@ -74,6 +89,9 @@ class _SchedulePageState extends State<SchedulePage> {
                     child: new Text(
                         day.date,
                         textAlign: TextAlign.center,
+                        style: new TextStyle(
+                            fontWeight: FontWeight.w500
+                        ),
                     )
                 ),
               ],
@@ -92,11 +110,14 @@ class _SchedulePageState extends State<SchedulePage> {
     List<Widget> widgets = [];
     widgets.add(new Card(
       color: themeStore.state.theme.backgroundColor,
-      elevation: 3.0,
+      elevation: 5.0,
       child: new Text(
           "v.${week.number}",
-          textScaleFactor: 2.5,
+          textScaleFactor: 2.0,
           textAlign: TextAlign.center,
+          style: new TextStyle(
+              color: Colors.black87
+          )
       ),
     ));
 
