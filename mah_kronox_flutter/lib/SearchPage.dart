@@ -18,10 +18,11 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
-  final List<Widget> searchResults = <Widget>[];
+  final List<Map> searchResults = <Map>[];
   final TextEditingController _textController = new TextEditingController();
   Choice _selectedChoice = choices[0]; // The app's "state".
   StreamSubscription searchStream;
+  bool loading = false;
 
   _SearchPageState() {
     searchStream = new Observable<String>(onTextChanged)
@@ -31,29 +32,28 @@ class _SearchPageState extends State<SearchPage> {
         .debounce(const Duration(milliseconds: 250))
         .doOnEach((var _) {
           setState(() {
+            loading = false;
             searchResults.clear();
           });
         })
         .where((String str) => str.isNotEmpty)
         .doOnEach((var _) {
           setState(() {
-            searchResults.add(new Center(child: new CircularProgressIndicator()));
+            loading = true;
           });
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
-        .listen((List latestResult) {
+        .listen((List<Map> latestResult) {
           setState(() {
-            searchResults.clear();
+            loading = false;
             if(latestResult.isNotEmpty) {
-              searchResults.addAll(
-                  latestResult.map((result) => buildResultCard(result)
-                  )
-              );
+              searchResults.addAll(latestResult);
             }
           });
         }, onError: (dynamic e) {
           debugPrint("ERROR: ${e.toString()}");
           setState(() {
+            loading = false;
             searchResults.clear();
           });
         }, cancelOnError: false);
@@ -90,18 +90,7 @@ class _SearchPageState extends State<SearchPage> {
           appBar: new AppBar(
             title: buildSearch(),
           ),
-          body: new Column(
-              children: <Widget>[
-                new Flexible(
-                    child: new ListView.builder(
-                      padding: new EdgeInsets.all(8.0),
-                      reverse: false,
-                      itemBuilder: (_, index) => searchResults[index],
-                      itemCount: searchResults.length,
-                    )
-                )
-              ]
-          ),
+          body: loading ? new Center(child: new CircularProgressIndicator()) : buildResults()
         )
     );
   }
@@ -143,7 +132,26 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget buildResultCard(Map result) {
+  Widget buildResults() {
+    return new Builder(
+        builder: (BuildContext context) {
+          return new Column(
+              children: <Widget>[
+                new Flexible(
+                    child: new ListView.builder(
+                      padding: new EdgeInsets.all(8.0),
+                      reverse: false,
+                      itemBuilder: (_, index) => buildResultCard(searchResults[index], context),
+                      itemCount: searchResults.length,
+                    )
+                )
+              ]
+          );
+        }
+    );
+  }
+
+  Widget buildResultCard(Map result, BuildContext context) {
     return new Card(
       child: new Column(
         mainAxisSize: MainAxisSize.min,
@@ -158,7 +166,16 @@ class _SearchPageState extends State<SearchPage> {
               children: <Widget>[
                 new FlatButton(
                   child: const Text('Lägg till schema'),
-                  onPressed: () { /* ... */ },
+                  onPressed: () {
+                    Scaffold.of(context).showSnackBar(new SnackBar(
+                        content: new Text("Lade till " + result["value"]),
+                        action: new SnackBarAction(label: "Ångra", onPressed: () {
+                          Scaffold.of(context).showSnackBar(new SnackBar(
+                            content: new Text("Ångrade tillägning av " + result["value"]),
+                          ));
+                        }),
+                    ));
+                  },
                 ),
               ],
             ),
