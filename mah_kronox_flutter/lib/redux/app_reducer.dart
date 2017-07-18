@@ -26,7 +26,8 @@ ThemeState _changeThemeAction(ThemeState state, ChangeThemeAction action) {
 class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
   final Map<Type, Function> _mapper = const <Type, Function>{
     AddScheduleAction: _addScheduleAction,
-    RemoveScheduleAction: _removeScheduleAction
+    RemoveScheduleAction: _removeScheduleAction,
+    SetCurrentScheduleAction: _setCurrentScheduleAction,
   };
 
   @override
@@ -35,6 +36,10 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
     // ignore: invocation_of_non_function
     return reducer != null ? reducer(state, action) : state;
   }
+}
+
+ScheduleState _setCurrentScheduleAction(ScheduleState state, SetCurrentScheduleAction action) {
+  return state.apply(currentSchedule: action.schedule);
 }
 
 ScheduleState _addScheduleAction(ScheduleState state, AddScheduleAction action) {

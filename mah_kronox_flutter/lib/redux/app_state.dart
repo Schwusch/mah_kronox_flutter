@@ -36,12 +36,13 @@ class ThemeState {
 
 class ScheduleState {
   final List<String> schedules;
+  final String currentSchedule;
 
-  ScheduleState({this.schedules});
+  ScheduleState({this.schedules, this.currentSchedule});
 
-  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[]);
+  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null);
 
-  ScheduleState apply({List<String> schedules}) {
-    return new ScheduleState(schedules: schedules ?? this.schedules);
+  ScheduleState apply({List<String> schedules, String currentSchedule}) {
+    return new ScheduleState(schedules: schedules ?? this.schedules, currentSchedule: currentSchedule ?? this.currentSchedule);
   }
 }

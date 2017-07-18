@@ -22,16 +22,37 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
+  var _subscribtion;
   List<Booking> bookings = [];
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy");
 
   _SchedulePageState() {
-    fetchBookings("tgsya15h").then((bookings) {
-      setState(() {
-        this.bookings = bookings;
+    fetchAndSetBookings();
+  }
+
+  fetchAndSetBookings() {
+    if(scheduleStore.state.currentSchedule != null) {
+      fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
+        setState(() {
+          this.bookings = bookings;
+        });
       });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribtion = scheduleStore.onChange.listen((_) {
+      fetchAndSetBookings();
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscribtion.cancel();
   }
 
   Widget _createScheduleItem(Booking booking) {

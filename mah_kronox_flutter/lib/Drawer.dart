@@ -29,11 +29,38 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
       ),
     ];
 
-    children.addAll(scheduleStore.state.schedules.map((schedule) {
+    children.addAll(scheduleStore.state.schedules.map((String schedule) {
       return new ListTile(
-        leading: new Icon(Icons.delete),
+        leading: new Icon(Icons.schedule),
         title: new Text(schedule),
-        onTap: () => scheduleStore.dispatch(new RemoveScheduleAction(schedule: schedule)),
+        onTap: () {
+          scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
+          Navigator.of(context).pop();
+        },
+        onLongPress: () {
+          showDialog(
+              context: context,
+              child: new AlertDialog(
+                title: new Text("Ta bort schema"),
+                content: new Text("Vill du ta bort ${schedule}?"),
+                actions: <Widget>[
+                  new FlatButton(
+                      onPressed: () {
+                        scheduleStore.dispatch(
+                          new RemoveScheduleAction(schedule: schedule)
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      child: new Text("Ta bort")
+                  ),
+                  new FlatButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: new Text("Tillbaka")
+                  )
+                ],
+              )
+          );
+        },
       );
     }));
 

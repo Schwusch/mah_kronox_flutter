@@ -25,3 +25,9 @@ class RemoveScheduleAction extends Action {
 
   RemoveScheduleAction({this.schedule});
 }
+
+class SetCurrentScheduleAction extends Action {
+  final String schedule;
+
+  SetCurrentScheduleAction({this.schedule});
+}
