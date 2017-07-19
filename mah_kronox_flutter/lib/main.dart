@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -10,6 +11,8 @@ import 'SettingsPage.dart';
 import 'redux/store.dart';
 import 'redux/app_state.dart';
 import 'redux/actions.dart';
+
+import 'utils/fileStorage.dart';
 
 const appName = "MAH Schema";
 
@@ -82,6 +85,13 @@ Future<Null> _init() async {
   scheduleStore = new ScheduleStore();
   
   await initializeDateFormatting("sv", null);
+
+  String stateString = await loadStateFromFile();
+
+  if(stateString != null) {
+    ScheduleState loadedState = ScheduleState.deserialize(JSON.decode(stateString));
+    scheduleStore = new ScheduleStore(initialState: loadedState);
+  }
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/Week.dart';
 
 class ThemeState {
   static final kBrightnessKey = "BrightnessKey";
@@ -37,12 +38,33 @@ class ThemeState {
 class ScheduleState {
   final List<String> schedules;
   final String currentSchedule;
+  final List<Week> weeksForCurrentSchedule;
 
-  ScheduleState({this.schedules, this.currentSchedule});
+  ScheduleState({this.schedules, this.currentSchedule, this.weeksForCurrentSchedule});
 
-  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null);
+  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null, weeksForCurrentSchedule: []);
 
-  ScheduleState apply({List<String> schedules, String currentSchedule}) {
-    return new ScheduleState(schedules: schedules ?? this.schedules, currentSchedule: currentSchedule ?? this.currentSchedule);
+  ScheduleState apply({List<String> schedules, String currentSchedule, List<Week> weeksForCurrentSchedule}) {
+    return new ScheduleState(
+        schedules: schedules ?? this.schedules,
+        currentSchedule: currentSchedule ?? this.currentSchedule,
+        weeksForCurrentSchedule: weeksForCurrentSchedule ?? this.weeksForCurrentSchedule
+    );
+  }
+
+  Map<String, dynamic> serialize() {
+    return {
+     "schedules": schedules,
+      "currentSchedule": currentSchedule,
+      "weeksForCurrentSchedule": weeksForCurrentSchedule.map((week) => week.serialize()).toList()
+    };
+  }
+
+  static ScheduleState deserialize(Map<String, dynamic> state) {
+    return new ScheduleState(
+      schedules: state["schedules"],
+      currentSchedule: state["currentSchedule"],
+      weeksForCurrentSchedule: state["weeksForCurrentSchedule"].map((week) => Week.deserialize(week)).toList()
+    );
   }
 }

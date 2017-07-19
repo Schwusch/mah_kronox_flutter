@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:redux/redux.dart' as redux;
 import 'app_state.dart';
 import 'actions.dart';
+import '../utils/fileStorage.dart';
 
 T orElseNull<T>() => null;
 
@@ -28,6 +30,7 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
     AddScheduleAction: _addScheduleAction,
     RemoveScheduleAction: _removeScheduleAction,
     SetCurrentScheduleAction: _setCurrentScheduleAction,
+    SetWeeksForCurrentSchedule: _setWeeksForCurrentScheduleAction,
   };
 
   @override
@@ -39,13 +42,25 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
 }
 
 ScheduleState _setCurrentScheduleAction(ScheduleState state, SetCurrentScheduleAction action) {
-  return state.apply(currentSchedule: action.schedule);
+  ScheduleState newState = state.apply(currentSchedule: action.schedule);
+  saveStateToFile(JSON.encode(newState.serialize()));
+  return newState;
 }
 
 ScheduleState _addScheduleAction(ScheduleState state, AddScheduleAction action) {
-  return state.apply(schedules: state.schedules.toList()..add(action.schedule));
+  ScheduleState newState = state.apply(schedules: state.schedules.toList()..add(action.schedule));
+  saveStateToFile(JSON.encode(newState.serialize()));
+  return newState;
 }
 
 ScheduleState _removeScheduleAction(ScheduleState state, RemoveScheduleAction action) {
-  return state.apply(schedules: state.schedules.toList()..remove(action.schedule));
+  ScheduleState newState = state.apply(schedules: state.schedules.toList()..remove(action.schedule));
+  saveStateToFile(JSON.encode(newState.serialize()));
+  return newState;
+}
+
+ScheduleState _setWeeksForCurrentScheduleAction(ScheduleState state, SetWeeksForCurrentSchedule action) {
+  ScheduleState newState = state.apply(weeksForCurrentSchedule: action.weeks);
+  saveStateToFile(JSON.encode(newState.serialize()));
+  return newState;
 }

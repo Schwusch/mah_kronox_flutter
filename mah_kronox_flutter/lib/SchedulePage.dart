@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
 
 import 'Drawer.dart';
 
 import 'utils/fetchBookings.dart';
-import 'utils/weekOfYear.dart';
 import 'utils/Booking.dart';
 import 'utils/Week.dart';
 import 'utils/Day.dart';
 
 import 'redux/store.dart';
+import 'redux/actions.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
@@ -26,7 +25,6 @@ class _SchedulePageState extends State<SchedulePage> {
   var _subscribtion;
   List<Booking> bookings = [];
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
-  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy");
 
   _SchedulePageState() {
     fetchAndSetBookings();
@@ -35,9 +33,9 @@ class _SchedulePageState extends State<SchedulePage> {
   fetchAndSetBookings() {
     if(scheduleStore.state.currentSchedule != null) {
       fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
-        setState(() {
-          this.bookings = bookings;
-        });
+        scheduleStore.dispatch(new SetWeeksForCurrentSchedule(
+            weeks: buildWeeksStructure(bookings)
+        ));
       });
     }
   }
@@ -154,57 +152,10 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  List<Widget> _buildSchedule(List<Booking> bookings) {
-    List<Week> weeks = <Week>[];
-
-    if(bookings.isNotEmpty) {
-      // Sort bookings by DateTime
-      bookings.sort((a, b) => a.start.compareTo(b.start));
-
-      Booking lastBooking = bookings.first;
-
-      Day day = new Day(
-          bookings: <Booking>[lastBooking],
-          date: dateFormatter.format(lastBooking.start)
-      );
-
-      Week week = new Week(
-        days: <Day>[day],
-        number: weekOfYear(lastBooking.start)
-      );
-
-      weeks.add(week);
-
-      for(Booking booking in bookings) {
-        if(weekOfYear(booking.start) != week.number) {
-          day = new Day(
-              bookings: <Booking>[booking],
-              date: dateFormatter.format(booking.start)
-          );
-
-          week = new Week(
-              days: <Day>[day],
-              number: weekOfYear(booking.start)
-          );
-
-          weeks.add(week);
-        } else if(lastBooking.start.day != booking.start.day || lastBooking.start.month != booking.start.month) {
-          day = new Day(
-              bookings: <Booking>[booking],
-              date: dateFormatter.format(booking.start)
-          );
-          week.days.add(day);
-        } else if (lastBooking.uuid != booking.uuid) {
-          day.bookings.add(booking);
-        }
-
-        lastBooking = booking;
-      }
-      var weeksSerialized = weeks.map((week) => week.serialize()).toList(growable: false);
-      print(JSON.encode(weeksSerialized));
-    }
-
-    return weeks.map((week) => _createWeekCard(week)).toList(growable: false);
+  List<Widget> _buildSchedule() {
+    return scheduleStore.state.weeksForCurrentSchedule.map((week) =>
+        _createWeekCard(week)).toList(growable: false
+    );
   }
 
   @override
@@ -216,7 +167,7 @@ class _SchedulePageState extends State<SchedulePage> {
       body: new ListView(
           padding: new EdgeInsets.all(10.0),
           reverse: false,
-          children: _buildSchedule(bookings),
+          children: _buildSchedule(),
       ),
       drawer: new ScheduleDrawer()
     );

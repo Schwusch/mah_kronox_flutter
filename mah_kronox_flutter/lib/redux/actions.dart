@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/Week.dart';
 
 abstract class Action {
   Action();
@@ -30,4 +31,10 @@ class SetCurrentScheduleAction extends Action {
   final String schedule;
 
   SetCurrentScheduleAction({this.schedule});
+}
+
+class SetWeeksForCurrentSchedule extends Action {
+  final List<Week> weeks;
+
+  SetWeeksForCurrentSchedule({this.weeks});
 }

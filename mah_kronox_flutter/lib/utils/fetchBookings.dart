@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import "package:dslink_schedule/ical.dart";
 import 'Booking.dart';
+import 'Week.dart';
+import 'Day.dart';
+import 'weekOfYear.dart';
+import 'package:intl/intl.dart';
 
 Future<List<Booking>> fetchBookings(String program) async {
   var httpClient = createHttpClient();
@@ -54,4 +58,56 @@ Future<List<Booking>> fetchBookings(String program) async {
   }
 
   return bookings;
+}
+
+List<Week> buildWeeksStructure(List<Booking> bookings) {
+  List<Week> weeks = <Week>[];
+  DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
+  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy");
+
+  if(bookings.isNotEmpty) {
+    // Sort bookings by DateTime
+    bookings.sort((a, b) => a.start.compareTo(b.start));
+
+    Booking lastBooking = bookings.first;
+
+    Day day = new Day(
+        bookings: <Booking>[lastBooking],
+        date: dateFormatter.format(lastBooking.start)
+    );
+
+    Week week = new Week(
+        days: <Day>[day],
+        number: weekOfYear(lastBooking.start)
+    );
+
+    weeks.add(week);
+
+    for(Booking booking in bookings) {
+      if(weekOfYear(booking.start) != week.number) {
+        day = new Day(
+            bookings: <Booking>[booking],
+            date: dateFormatter.format(booking.start)
+        );
+
+        week = new Week(
+            days: <Day>[day],
+            number: weekOfYear(booking.start)
+        );
+
+        weeks.add(week);
+      } else if(lastBooking.start.day != booking.start.day || lastBooking.start.month != booking.start.month) {
+        day = new Day(
+            bookings: <Booking>[booking],
+            date: dateFormatter.format(booking.start)
+        );
+        week.days.add(day);
+      } else if (lastBooking.uuid != booking.uuid) {
+        day.bookings.add(booking);
+      }
+
+      lastBooking = booking;
+    }
+  }
+  return weeks;
 }
