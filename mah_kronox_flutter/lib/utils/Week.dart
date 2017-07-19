@@ -15,7 +15,7 @@ class Week {
 
   static Week deserialize(Map<String, dynamic> week) {
     return new Week(
-        days: week["days"].map((day) => Day.deserialize(day)),
+        days: week["days"].map((day) => Day.deserialize(day)).toList(),
         number: week["number"]
     );
   }

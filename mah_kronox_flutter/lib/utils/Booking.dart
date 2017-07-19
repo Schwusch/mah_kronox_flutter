@@ -24,8 +24,8 @@ class Booking {
   static Booking deserialize(Map<String, dynamic> booking) {
     Booking deserialized = new Booking();
 
-    deserialized.start = booking["start"];
-    deserialized.end = booking["end"];
+    deserialized.start = DateTime.parse(booking["start"]);
+    deserialized.end = DateTime.parse(booking["end"]);
     deserialized.location = booking["location"];
     deserialized.uuid = booking["uuid"];
     deserialized.course = booking["course"];

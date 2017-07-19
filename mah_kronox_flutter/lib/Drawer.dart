@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'utils/fetchBookings.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'SettingsPage.dart';
@@ -35,6 +36,12 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         title: new Text(schedule),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
+            fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
+              scheduleStore.dispatch(new SetWeeksForCurrentSchedule(
+                  weeks: buildWeeksStructure(bookings)
+              ));
+            });
+
           Navigator.of(context).pop();
         },
         onLongPress: () {

@@ -15,7 +15,7 @@ class Day {
 
   static Day deserialize(Map<String, dynamic> day) {
     return new Day(
-      bookings: day["bookings"].map((booking) => Booking.deserialize(booking)),
+      bookings: day["bookings"].map((booking) => Booking.deserialize(booking)).toList(),
       date: day["date"]
     );
   }
