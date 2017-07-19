@@ -1,3 +1,4 @@
+import 'dart:convert';
 
 class Booking {
   DateTime start;
@@ -7,4 +8,34 @@ class Booking {
   String course;
   String moment;
   List<String> signatures;
+
+  Map<String, dynamic> serialize() {
+    return {
+      "start": start.toIso8601String(),
+      "end": end.toIso8601String(),
+      "location": location,
+      "uuid": uuid,
+      "course": course,
+      "moment": moment,
+      "signatures": signatures
+    };
+  }
+
+  static Booking deserialize(Map<String, dynamic> booking) {
+    Booking deserialized = new Booking();
+
+    deserialized.start = booking["start"];
+    deserialized.end = booking["end"];
+    deserialized.location = booking["location"];
+    deserialized.uuid = booking["uuid"];
+    deserialized.course = booking["course"];
+    deserialized.moment = booking["moment"];
+    deserialized.signatures = booking["signatures"];
+
+    return deserialized;
+  }
+}
+
+class BookingSerializer {
+
 }

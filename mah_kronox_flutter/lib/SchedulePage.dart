@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 import 'Drawer.dart';
 
@@ -199,6 +200,8 @@ class _SchedulePageState extends State<SchedulePage> {
 
         lastBooking = booking;
       }
+      var weeksSerialized = weeks.map((week) => week.serialize()).toList(growable: false);
+      print(JSON.encode(weeksSerialized));
     }
 
     return weeks.map((week) => _createWeekCard(week)).toList(growable: false);
