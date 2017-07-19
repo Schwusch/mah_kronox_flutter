@@ -39,9 +39,12 @@ Future<List<Booking>> fetchBookings(String program) async {
       }
     }
 
+    DateTime start = x.properties["DTSTART"];
+    DateTime end = x.properties["DTEND"];
+    
     e.location = x.properties["LOCATION"];
-    e.start = x.properties["DTSTART"];
-    e.end = x.properties["DTEND"];
+    e.start = start.toLocal();
+    e.end = end.toLocal();
     e.uuid = x.properties["UID"];
     e.moment = moment;
     e.signatures = signatures;

@@ -81,7 +81,8 @@ Future<Null> _init() async {
   themeStore = new ThemeStore();
   scheduleStore = new ScheduleStore();
   
-  await initializeDateFormatting("sv_SE", null);
+  await initializeDateFormatting("sv", null);
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
   bool bright = prefs.getBool(ThemeState.kBrightnessKey);
