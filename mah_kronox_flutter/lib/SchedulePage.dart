@@ -55,32 +55,35 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Widget _createScheduleItem(Booking booking) {
-    return new Card(
+    Iterable<Widget> locations = booking.location.split(" ").map((loc) =>
+      new Text(
+        loc,
+        style: new TextStyle(color: Colors.blueGrey),
+      ));
 
+    List<Widget> leftColumnChildren = [
+      new Text(
+          timeFormatter.format(booking.start),
+          style: new TextStyle(
+              color: Colors.blueGrey
+          )
+      ),
+      new Text(
+          timeFormatter.format(booking.end),
+          style: new TextStyle(
+              color: Colors.grey
+          )
+      ),
+    ];
+
+    leftColumnChildren.addAll(locations);
+
+    return new Card(
       elevation: 3.0,
       child: new Row(
         children: <Widget>[
           new Column(
-            children: <Widget>[
-              new Text(
-                  timeFormatter.format(booking.start),
-                  style: new TextStyle(
-                      color: Colors.blueGrey
-                  )
-              ),
-              new Text(
-                  timeFormatter.format(booking.end),
-                  style: new TextStyle(
-                      color: Colors.grey
-                  )
-                  ),
-              new Text(
-                  booking.location,
-                  style: new TextStyle(
-                      color: Colors.blueGrey,
-                  )
-              )
-            ],
+            children: leftColumnChildren
           ),
           new Flexible(
             child: new Column(
@@ -117,7 +120,7 @@ class _SchedulePageState extends State<SchedulePage> {
               ],
           ),
           new Padding(
-              padding: new EdgeInsets.all(10.0),
+              padding: new EdgeInsets.all(5.0),
               child: new Column(
                   children: day.bookings.map((booking) => _createScheduleItem(booking)).toList(growable: false)
               )
@@ -165,7 +168,7 @@ class _SchedulePageState extends State<SchedulePage> {
           title: new Text(scheduleStore.state.currentSchedule ?? widget.title),
       ),
       body: new ListView(
-          padding: new EdgeInsets.all(10.0),
+          padding: new EdgeInsets.all(5.0),
           reverse: false,
           children: _buildSchedule(),
       ),
