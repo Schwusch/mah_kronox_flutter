@@ -30,7 +30,7 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
     AddScheduleAction: _addScheduleAction,
     RemoveScheduleAction: _removeScheduleAction,
     SetCurrentScheduleAction: _setCurrentScheduleAction,
-    SetWeeksForCurrentSchedule: _setWeeksForCurrentScheduleAction,
+    SetWeeksForCurrentScheduleAction: _setWeeksForCurrentScheduleAction,
   };
 
   @override
@@ -59,7 +59,7 @@ ScheduleState _removeScheduleAction(ScheduleState state, RemoveScheduleAction ac
   return newState;
 }
 
-ScheduleState _setWeeksForCurrentScheduleAction(ScheduleState state, SetWeeksForCurrentSchedule action) {
+ScheduleState _setWeeksForCurrentScheduleAction(ScheduleState state, SetWeeksForCurrentScheduleAction action) {
   ScheduleState newState = state.apply(weeksForCurrentSchedule: action.weeks);
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;

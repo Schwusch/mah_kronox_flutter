@@ -33,7 +33,7 @@ class _SchedulePageState extends State<SchedulePage> {
   fetchAndSetBookings() {
     if(scheduleStore.state.currentSchedule != null) {
       fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
-        scheduleStore.dispatch(new SetWeeksForCurrentSchedule(
+        scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
             weeks: buildWeeksStructure(bookings)
         ));
       });
@@ -44,7 +44,7 @@ class _SchedulePageState extends State<SchedulePage> {
   void initState() {
     super.initState();
     _subscribtion = scheduleStore.onChange.listen((_) {
-      fetchAndSetBookings();
+      setState(() {});
     });
   }
 
@@ -162,7 +162,7 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-          title: new Text(widget.title),
+          title: new Text(scheduleStore.state.currentSchedule ?? widget.title),
       ),
       body: new ListView(
           padding: new EdgeInsets.all(10.0),

@@ -33,8 +33,8 @@ class SetCurrentScheduleAction extends Action {
   SetCurrentScheduleAction({this.schedule});
 }
 
-class SetWeeksForCurrentSchedule extends Action {
+class SetWeeksForCurrentScheduleAction extends Action {
   final List<Week> weeks;
 
-  SetWeeksForCurrentSchedule({this.weeks});
+  SetWeeksForCurrentScheduleAction({this.weeks});
 }
