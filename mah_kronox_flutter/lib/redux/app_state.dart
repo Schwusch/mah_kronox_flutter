@@ -67,7 +67,7 @@ class ScheduleState {
 
   static ScheduleState deserialize(Map<String, dynamic> state) {
     Map<String, dynamic> weeksMapsDeserialized = new Map();
-    state["weeksMap"].forEach((key, value) =>
+    state["weeksMap"]?.forEach((key, value) =>
         weeksMapsDeserialized[key] = value.map((week) => Week.deserialize(week)).toList()
     );
     return new ScheduleState(
