@@ -58,20 +58,24 @@ class _SchedulePageState extends State<SchedulePage> {
     Iterable<Widget> locations = booking.location.split(" ").map((loc) =>
       new Text(
         loc,
-        style: new TextStyle(color: Colors.blueGrey),
+        style: new TextStyle(color: themeStore.state.accentColor.shade700),
       ));
 
     List<Widget> leftColumnChildren = [
       new Text(
           timeFormatter.format(booking.start),
           style: new TextStyle(
-              color: Colors.blueGrey
+            fontSize: 24.0,
+            color: themeStore.state.primaryColor.shade200,
+            fontWeight: FontWeight.bold
           )
       ),
       new Text(
           timeFormatter.format(booking.end),
           style: new TextStyle(
-              color: Colors.grey
+            fontSize: 24.0,
+            color: themeStore.state.theme.textTheme.caption.color,
+            fontWeight: FontWeight.bold
           )
       ),
     ];
@@ -80,21 +84,31 @@ class _SchedulePageState extends State<SchedulePage> {
 
     return new Card(
       elevation: 3.0,
-      child: new Row(
-        children: <Widget>[
-          new Column(
-            children: leftColumnChildren
-          ),
-          new Flexible(
-            child: new Column(
-              children: <Widget>[
-                new Text(booking.course),
-                new Text(booking.signatures.toString()),
-                new Text(booking.moment)
-              ],
+      child: new Container(
+        child: new Row(
+          children: <Widget>[
+            new Container(
+              child: new Column(
+                children: leftColumnChildren,
+              ),
+              padding: new EdgeInsets.all(5.0),
+              width: 110.0,
+            ),
+            new Flexible(
+              child: new Container(
+                child: new Column(
+                  children: <Widget>[
+                    new Text(booking.course),
+                    new Text(booking.signatures.toString()),
+                    new Text(booking.moment)
+                  ],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                padding: new EdgeInsets.all(5.0),
+              )
             )
-          )
-        ],
+          ],
+        ),
       )
     );
   }
@@ -132,15 +146,13 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget _createWeekCard(Week week) {
     List<Widget> widgets = [];
     widgets.add(new Card(
-      color: themeStore.state.theme.backgroundColor,
+      color: themeStore.state.theme.primaryColor,
       elevation: 5.0,
       child: new Text(
           "v.${week.number}",
           textScaleFactor: 2.0,
           textAlign: TextAlign.center,
-          style: new TextStyle(
-              color: Colors.black87
-          )
+          style: themeStore.state.theme.primaryTextTheme.body1
       ),
     ));
 
@@ -151,7 +163,7 @@ class _SchedulePageState extends State<SchedulePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: widgets
       ),
-      color: themeStore.state.theme.canvasColor,
+      color: themeStore.state.brightness == Brightness.light ? themeStore.state.primaryColor.shade50 : themeStore.state.theme.canvasColor,
     );
   }
 
