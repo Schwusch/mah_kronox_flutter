@@ -38,33 +38,42 @@ class ThemeState {
 class ScheduleState {
   final List<String> schedules;
   final String currentSchedule;
-  final List<Week> weeksForCurrentSchedule;
+  final Map<String, List<Week>> weeksMap;
 
-  ScheduleState({this.schedules, this.currentSchedule, this.weeksForCurrentSchedule});
+  ScheduleState({this.schedules, this.currentSchedule, this.weeksMap});
 
-  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null, weeksForCurrentSchedule: []);
+  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null, weeksMap: new Map());
 
-  ScheduleState apply({List<String> schedules, String currentSchedule, List<Week> weeksForCurrentSchedule}) {
+  ScheduleState apply({List<String> schedules, String currentSchedule, Map<String, List<Week>> weeksMap}) {
     return new ScheduleState(
         schedules: schedules ?? this.schedules,
         currentSchedule: currentSchedule ?? this.currentSchedule,
-        weeksForCurrentSchedule: weeksForCurrentSchedule ?? this.weeksForCurrentSchedule
+        weeksMap: weeksMap ?? this.weeksMap
     );
   }
 
   Map<String, dynamic> serialize() {
+    Map<String, dynamic> weeksMapsSerialized = new Map();
+    weeksMap.forEach((key, value) =>
+      weeksMapsSerialized[key] = value.map((week) => week.serialize()).toList()
+    );
+
     return {
      "schedules": schedules,
       "currentSchedule": currentSchedule,
-      "weeksForCurrentSchedule": weeksForCurrentSchedule.map((week) => week.serialize()).toList()
+      "weeksMap": weeksMapsSerialized
     };
   }
 
   static ScheduleState deserialize(Map<String, dynamic> state) {
+    Map<String, dynamic> weeksMapsDeserialized = new Map();
+    state["weeksMap"].forEach((key, value) =>
+        weeksMapsDeserialized[key] = value.map((week) => Week.deserialize(week)).toList()
+    );
     return new ScheduleState(
       schedules: state["schedules"],
       currentSchedule: state["currentSchedule"],
-      weeksForCurrentSchedule: state["weeksForCurrentSchedule"].map((week) => Week.deserialize(week)).toList()
+      weeksMap: weeksMapsDeserialized
     );
   }
 }

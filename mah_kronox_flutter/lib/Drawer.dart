@@ -36,9 +36,10 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         title: new Text(schedule),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
-          fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
+          fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
+
             scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-                weeks: buildWeeksStructure(bookings)
+                weeks: buildWeeksStructureMap(bookings)
             ));
           });
 

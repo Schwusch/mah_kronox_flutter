@@ -32,9 +32,9 @@ class _SchedulePageState extends State<SchedulePage> {
 
   fetchAndSetBookings() {
     if(scheduleStore.state.currentSchedule != null) {
-      fetchBookings(scheduleStore.state.currentSchedule).then((bookings) {
+      fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
         scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-            weeks: buildWeeksStructure(bookings)
+            weeks: buildWeeksStructureMap(bookings)
         ));
       });
     }
@@ -156,8 +156,22 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   List<Widget> _buildSchedule() {
-    return scheduleStore.state.weeksForCurrentSchedule.map((week) =>
+    return scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule].map((week) =>
         _createWeekCard(week)).toList(growable: false
+    );
+  }
+
+  Widget buildBody() {
+    if(scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule] != null) {
+      return new ListView(
+        padding: new EdgeInsets.all(5.0),
+        reverse: false,
+        children: _buildSchedule(),
+      );
+    }
+
+    return new Center(
+      child: new Text("Inget schema valt"),
     );
   }
 
@@ -167,11 +181,7 @@ class _SchedulePageState extends State<SchedulePage> {
       appBar: new AppBar(
           title: new Text(scheduleStore.state.currentSchedule ?? widget.title),
       ),
-      body: new ListView(
-          padding: new EdgeInsets.all(5.0),
-          reverse: false,
-          children: _buildSchedule(),
-      ),
+      body: buildBody(),
       drawer: new ScheduleDrawer()
     );
   }

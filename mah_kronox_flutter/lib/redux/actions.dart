@@ -34,7 +34,7 @@ class SetCurrentScheduleAction extends Action {
 }
 
 class SetWeeksForCurrentScheduleAction extends Action {
-  final List<Week> weeks;
+  final Map<String, List<Week>> weeks;
 
   SetWeeksForCurrentScheduleAction({this.weeks});
 }

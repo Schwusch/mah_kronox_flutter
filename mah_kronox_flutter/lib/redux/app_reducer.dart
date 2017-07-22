@@ -60,7 +60,7 @@ ScheduleState _removeScheduleAction(ScheduleState state, RemoveScheduleAction ac
 }
 
 ScheduleState _setWeeksForCurrentScheduleAction(ScheduleState state, SetWeeksForCurrentScheduleAction action) {
-  ScheduleState newState = state.apply(weeksForCurrentSchedule: action.weeks);
+  ScheduleState newState = state.apply(weeksMap: action.weeks);
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }

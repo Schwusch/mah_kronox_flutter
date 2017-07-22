@@ -6,8 +6,26 @@ import 'Week.dart';
 import 'Day.dart';
 import 'weekOfYear.dart';
 import 'package:intl/intl.dart';
+import 'package:tuple/tuple.dart';
 
-Future<List<Booking>> fetchBookings(String program) async {
+Future<Map<String, List<Booking>>> fetchAllBookings(List<String> programs) async {
+  List<Future<Tuple2<String, List<Booking>>>> futures = [];
+
+  for(String program in programs) {
+    futures.add(fetchBookings(program));
+  }
+  
+  List<Tuple2<String, List<Booking>>> tuples = await Future.wait(futures);
+  Map<String, List<Booking>> bookingMap = new Map();
+
+  for(Tuple2<String, List<Booking>> tuple in tuples) {
+    bookingMap[tuple.item1] = tuple.item2;
+  }
+
+  return bookingMap;
+}
+
+Future<Tuple2<String, List<Booking>>> fetchBookings(String program) async {
   var httpClient = createHttpClient();
   String ical = await httpClient.read("https://kronox.mah.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sokMedAND=false&sprak=SV&resurser=p.${program}");
 
@@ -57,7 +75,13 @@ Future<List<Booking>> fetchBookings(String program) async {
     bookings.add(e);
   }
 
-  return bookings;
+  return new Tuple2(program, bookings);
+}
+
+Map<String, List<Week>> buildWeeksStructureMap(Map<String, List<Booking>> bookingsMap) {
+  Map<String, List<Week>> weekMap = new Map();
+  bookingsMap.forEach((key, value) => weekMap[key] = buildWeeksStructure(value));
+  return weekMap;
 }
 
 List<Week> buildWeeksStructure(List<Booking> bookings) {
