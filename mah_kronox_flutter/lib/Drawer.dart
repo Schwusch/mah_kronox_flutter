@@ -15,6 +15,14 @@ class ScheduleDrawer extends StatefulWidget{
 class _ScheduleDrawerState extends State<ScheduleDrawer> {
   var _subscription;
 
+  refreshAllSchedules() {
+    fetchAllSchedules(scheduleStore.state.schedules).then((weeks) {
+      scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
+          weeks: weeks
+      ));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> children = <Widget>[
@@ -29,6 +37,19 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
           title: new Text("Mina Sheman"),
           dense: true
       ),
+      new ListTile(
+        leading: new Icon(Icons.all_inclusive),
+        title: new Text("Visa alla scheman"),
+        onTap: () {
+          scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: new ScheduleMeta(
+            name: "all",
+            description: "Alla mina scheman",
+          )));
+
+          refreshAllSchedules();
+          Navigator.of(context).pop();
+        },
+      ),
     ];
 
     children.addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
@@ -37,13 +58,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         title: new Text(schedule.name),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
-          fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
-
-            scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-                weeks: buildWeeksStructureMap(bookings)
-            ));
-          });
-
+          refreshAllSchedules();
           Navigator.of(context).pop();
         },
         onLongPress: () {

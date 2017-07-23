@@ -9,6 +9,12 @@ import 'ScheduleMeta.dart';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
 
+Future<Map<String, List<Week>>> fetchAllSchedules(List<ScheduleMeta> programs) async {
+  var allBookings = await fetchAllBookings(programs);
+  return buildWeeksStructureMap(allBookings);
+}
+
+
 Future<Map<ScheduleMeta, List<Booking>>> fetchAllBookings(List<ScheduleMeta> programs) async {
   List<Future<Tuple2<ScheduleMeta, List<Booking>>>> futures = [];
 
@@ -82,7 +88,15 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) 
 
 Map<String, List<Week>> buildWeeksStructureMap(Map<ScheduleMeta, List<Booking>> bookingsMap) {
   Map<String, List<Week>> weekMap = new Map();
-  bookingsMap.forEach((key, value) => weekMap[key.name] = buildWeeksStructure(value));
+  List<Booking> allBookings = [];
+
+  bookingsMap.forEach((key, value) {
+    allBookings.addAll(value);
+    weekMap[key.name] = buildWeeksStructure(value);
+  });
+
+  weekMap["all"] = buildWeeksStructure(allBookings);
+
   return weekMap;
 }
 
