@@ -72,7 +72,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
                   new FlatButton(
                       onPressed: () {
                         scheduleStore.dispatch(
-                          new RemoveScheduleAction(schedule: schedule)
+                          new RemoveScheduleAction(schedule: schedule.name)
                         );
                         Navigator.of(context).pop();
                       },

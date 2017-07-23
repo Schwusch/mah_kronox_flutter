@@ -26,6 +26,15 @@ class _SearchPageState extends State<SearchPage> {
   Choice _selectedChoice = choices[0]; // The app's "state".
   StreamSubscription searchStream;
   bool loading = false;
+  var _subscribtion;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribtion = scheduleStore.onChange.listen((_) {
+      setState(() {});
+    });
+  }
 
   _SearchPageState() {
     searchStream = new Observable<String>(onTextChanged)
@@ -66,6 +75,7 @@ class _SearchPageState extends State<SearchPage> {
   void dispose() {
     super.dispose();
     searchStream.cancel();
+    _subscribtion.cancel();
   }
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
@@ -155,8 +165,50 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget buildResultCard(Map result, BuildContext context) {
+    String name = result["value"];
     String description = result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
-    TextEditingController controller = new TextEditingController(text: result["value"]);
+    TextEditingController controller = new TextEditingController(text: name);
+
+    Function onPressed = () {
+      showDialog(
+          context: context,
+          child: new AlertDialog(
+            title: new Text("Namnge ditt schema"),
+            content: new TextField(
+              autofocus: true,
+              controller: controller,
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                  onPressed: () {
+                    String givenName = controller.text;
+
+                    scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
+                        givenName: givenName,
+                        name: name,
+                        type: _selectedChoice.value,
+                        description: description
+                    )));
+
+                    Scaffold.of(context).showSnackBar(new SnackBar(
+                      content: new Text("Lade till " + givenName),
+                      action: new SnackBarAction(label: "Ångra", onPressed: () {
+                        scheduleStore.dispatch(new RemoveScheduleAction(schedule: name));
+
+                        Scaffold.of(context).showSnackBar(new SnackBar(
+                          content: new Text("Ångrade tillägning av " + givenName),
+                        ));
+                      }),
+                    ));
+
+                    Navigator.of(context).pop();
+                  },
+                  child: new Text("Lägg till")
+              ),
+            ],
+          )
+      );
+    };
 
     return new Card(
       child: new Column(
@@ -172,47 +224,8 @@ class _SearchPageState extends State<SearchPage> {
               children: <Widget>[
                 new FlatButton(
                   child: const Text('Lägg till schema'),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      child: new AlertDialog(
-                        title: new Text("Namnge ditt schema"),
-                        content: new TextField(
-                          autofocus: true,
-                          controller: controller,
-                        ),
-                        actions: <Widget>[
-                          new FlatButton(
-                              onPressed: () {
-                                String givenName = controller.text;
-
-                                scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
-                                    givenName: givenName,
-                                    name: result['value'],
-                                    type: _selectedChoice.value,
-                                    description: description
-                                )));
-
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                  content: new Text("Lade till " + givenName),
-                                  action: new SnackBarAction(label: "Ångra", onPressed: () {
-                                    scheduleStore.dispatch(new RemoveScheduleAction(schedule: result['value']));
-
-                                    Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text("Ångrade tillägning av " + givenName),
-                                    ));
-                                  }),
-                                ));
-
-                                Navigator.of(context).pop();
-                              },
-                              child: new Text("Lägg till")
-                          ),
-                        ],
-                      )
-                    );
-                  },
-                ),
+                  onPressed: scheduleStore.state.schedules.any((schedule) =>  schedule.name == name) ? null : onPressed
+                )
               ],
             ),
           ),

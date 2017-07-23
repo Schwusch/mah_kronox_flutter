@@ -23,7 +23,7 @@ class AddScheduleAction extends Action {
 }
 
 class RemoveScheduleAction extends Action {
-  final ScheduleMeta schedule;
+  final String schedule;
 
   RemoveScheduleAction({this.schedule});
 }
