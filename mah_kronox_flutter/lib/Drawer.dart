@@ -42,6 +42,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         title: new Text("Visa alla scheman"),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: new ScheduleMeta(
+            givenName: "Alla mina scheman",
             name: "all",
             description: "Alla mina scheman",
           )));

@@ -89,8 +89,13 @@ Future<Null> _init() async {
   String stateString = await loadStateFromFile();
 
   if(stateString != null) {
-    ScheduleState loadedState = ScheduleState.deserialize(JSON.decode(stateString));
-    scheduleStore = new ScheduleStore(initialState: loadedState);
+    try {
+      ScheduleState loadedState = ScheduleState.deserialize(JSON.decode(stateString));
+      scheduleStore = new ScheduleStore(initialState: loadedState);
+    } catch(exception, stackTrace) {
+      print(exception);
+      print(stackTrace);
+    }
   }
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
