@@ -55,6 +55,13 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Widget _createScheduleItem(Booking booking) {
+    String teachers = "";
+    Map signaturemap = scheduleStore.state.signatureMap;
+
+    for(String teacher in booking.signatures) {
+      teachers += (signaturemap[teacher] ?? teacher) + ", ";
+    }
+
     Iterable<Widget> locations = booking.location.split(" ").map((loc) =>
       new Text(
         loc,
@@ -99,7 +106,13 @@ class _SchedulePageState extends State<SchedulePage> {
                 child: new Column(
                   children: <Widget>[
                     new Text(booking.course),
-                    new Text(booking.signatures.toString()),
+                    new Text(
+                      teachers,
+                      style: new TextStyle(
+                        color: themeStore.state.theme.textTheme.caption.color,
+                        fontWeight: FontWeight.bold
+                      )
+                    ),
                     new Text(booking.moment)
                   ],
                   crossAxisAlignment: CrossAxisAlignment.start,

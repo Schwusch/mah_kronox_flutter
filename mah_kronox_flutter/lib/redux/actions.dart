@@ -39,3 +39,9 @@ class SetWeeksForCurrentScheduleAction extends Action {
 
   SetWeeksForCurrentScheduleAction({this.weeks});
 }
+
+class SetSignatureMap extends Action {
+  final Map<String, String> signatures;
+
+  SetSignatureMap({this.signatures});
+}

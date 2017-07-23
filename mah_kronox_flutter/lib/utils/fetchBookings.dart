@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import "package:dslink_schedule/ical.dart";
 import 'Booking.dart';
@@ -8,6 +9,8 @@ import 'weekOfYear.dart';
 import 'ScheduleMeta.dart';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
+import '../redux/store.dart';
+import '../redux/actions.dart';
 
 Future<Map<String, List<Week>>> fetchAllSchedules(List<ScheduleMeta> programs) async {
   var allBookings = await fetchAllBookings(programs);
@@ -86,6 +89,42 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) 
   return new Tuple2(program, bookings);
 }
 
+getAllSignaturesFromBookings(List<Booking> bookings) async {
+  Set<String> signatures = new Set<String>();
+
+  for(Booking booking in bookings) {
+    for(String signature in booking.signatures) {
+      signatures.add(signature);
+    }
+  }
+
+  List<Future<String>> futures = [];
+
+  for(String signature in signatures) {
+    futures.add(getSignature(signature));
+  }
+
+  List<String> signatureTuples = await Future.wait(futures);
+  Map<String, String> signatureMap = new Map();
+
+  for(String str in signatureTuples) {
+    List<String> splitted = str.split(", ");
+    signatureMap[splitted[0]] = splitted[1];
+  }
+
+  scheduleStore.dispatch(new SetSignatureMap(signatures: signatureMap));
+}
+
+Future<String> getSignature(String signature) async {
+  var http = createHttpClient();
+  String response = await http.read("https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=signatur&endastForkortningar=true&term=${signature}");
+  List decoded = JSON.decode(response);
+  String html = decoded[0]["label"];
+
+  String name = html.replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
+  return name;
+}
+
 Map<String, List<Week>> buildWeeksStructureMap(Map<ScheduleMeta, List<Booking>> bookingsMap) {
   Map<String, List<Week>> weekMap = new Map();
   List<Booking> allBookings = [];
@@ -94,6 +133,8 @@ Map<String, List<Week>> buildWeeksStructureMap(Map<ScheduleMeta, List<Booking>> 
     allBookings.addAll(value);
     weekMap[key.name] = buildWeeksStructure(value);
   });
+
+  getAllSignaturesFromBookings(allBookings);
 
   weekMap["all"] = buildWeeksStructure(allBookings);
 

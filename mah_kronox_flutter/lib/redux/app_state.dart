@@ -40,16 +40,28 @@ class ScheduleState {
   final List<ScheduleMeta> schedules;
   final ScheduleMeta currentSchedule;
   final Map<String, List<Week>> weeksMap;
+  final Map<String, String> signatureMap;
 
-  ScheduleState({this.schedules, this.currentSchedule, this.weeksMap});
+  ScheduleState({this.schedules, this.currentSchedule, this.weeksMap, this.signatureMap});
 
-  factory ScheduleState.initial() => new ScheduleState(schedules: <ScheduleMeta>[], currentSchedule: null, weeksMap: new Map());
+  factory ScheduleState.initial() => new ScheduleState(
+    schedules: <ScheduleMeta>[],
+    currentSchedule: null,
+    weeksMap: new Map(),
+    signatureMap: new Map()
+  );
 
-  ScheduleState apply({List<ScheduleMeta> schedules, ScheduleMeta currentSchedule, Map<String, List<Week>> weeksMap}) {
+  ScheduleState apply({
+    List<ScheduleMeta> schedules,
+    ScheduleMeta currentSchedule,
+    Map<String, List<Week>> weeksMap,
+    Map<String, String> signatureMap}) {
+
     return new ScheduleState(
-        schedules: schedules ?? this.schedules,
-        currentSchedule: currentSchedule ?? this.currentSchedule,
-        weeksMap: weeksMap ?? this.weeksMap
+      schedules: schedules ?? this.schedules,
+      currentSchedule: currentSchedule ?? this.currentSchedule,
+      weeksMap: weeksMap ?? this.weeksMap,
+      signatureMap: signatureMap ?? this.signatureMap
     );
   }
 
@@ -60,6 +72,7 @@ class ScheduleState {
     );
 
     return {
+      "signatureMap": signatureMap,
      "schedules": schedules.map((meta) => meta.serialize()).toList(growable: false),
       "currentSchedule": currentSchedule?.serialize(),
       "weeksMap": weeksMapsSerialized
@@ -73,6 +86,7 @@ class ScheduleState {
     );
 
     return new ScheduleState(
+      signatureMap: state["signatureMap"],
       schedules: state["schedules"].map((schedule) => ScheduleMeta.deserialize(schedule)).toList(),
       currentSchedule: ScheduleMeta.deserialize(state["currentSchedule"]),
       weeksMap: weeksMapsDeserialized
