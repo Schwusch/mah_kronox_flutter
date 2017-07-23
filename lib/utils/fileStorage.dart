@@ -14,7 +14,6 @@ Future<String> loadStateFromFile() async {
     File stateFile = new File("$dir/state.txt");
     String state = await stateFile.readAsString();
     return state;
-
   } on FileSystemException {
     return null;
   }

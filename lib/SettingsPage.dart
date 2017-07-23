@@ -36,15 +36,15 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-        appBar: new AppBar(
-            title: new Text(widget.title),
-        ),
-        body: new ListView(children: <Widget>[
-          _buildDarkModeSwitch(),
-          _buildPrimaryColor(),
-          _buildAccentColor(),
-          new Divider()
-        ]),
+      appBar: new AppBar(
+        title: new Text(widget.title),
+      ),
+      body: new ListView(children: <Widget>[
+        _buildDarkModeSwitch(),
+        _buildPrimaryColor(),
+        _buildAccentColor(),
+        new Divider()
+      ]),
     );
   }
 
@@ -53,46 +53,46 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return new ListTile(
         title: new Row(children: [
-          new Expanded(child: new Text("Dark Mode")),
-          new Switch(
-              value: brightness,
-              onChanged: (bool value) async {
-                if (value != brightness) {
-                  themeStore.dispatch(new ChangeThemeAction(
-                      brightness:
+      new Expanded(child: new Text("Dark Mode")),
+      new Switch(
+          value: brightness,
+          onChanged: (bool value) async {
+            if (value != brightness) {
+              themeStore.dispatch(new ChangeThemeAction(
+                  brightness:
                       value == true ? Brightness.dark : Brightness.light));
-                  persistBrightness(value);
-                }
-              })
-        ]));
+              persistBrightness(value);
+            }
+          })
+    ]));
   }
 
   Widget _buildPrimaryColor() {
     return _buildColorTile("Primary Color", themeStore.state.primaryColor,
-            () async {
-          Color color = await showDialog(
-              context: context,
-              child: new PrimaryColorPickerDialog(
-                  selected: themeStore.state.primaryColor));
-          if (color != null) {
-            themeStore.dispatch(new ChangeThemeAction(primaryColor: color));
-            persistAccentColor(color);
-          }
-        });
+        () async {
+      Color color = await showDialog(
+          context: context,
+          child: new PrimaryColorPickerDialog(
+              selected: themeStore.state.primaryColor));
+      if (color != null) {
+        themeStore.dispatch(new ChangeThemeAction(primaryColor: color));
+        persistAccentColor(color);
+      }
+    });
   }
 
   Widget _buildAccentColor() {
     return _buildColorTile("Accent Color", themeStore.state.accentColor,
-            () async {
-          Color color = await showDialog(
-              context: context,
-              child: new AccentColorPickerDialog(
-                  selected: themeStore.state.accentColor));
-          if (color != null) {
-            themeStore.dispatch(new ChangeThemeAction(accentColor: color));
-            persistAccentColor(color);
-          }
-        });
+        () async {
+      Color color = await showDialog(
+          context: context,
+          child: new AccentColorPickerDialog(
+              selected: themeStore.state.accentColor));
+      if (color != null) {
+        themeStore.dispatch(new ChangeThemeAction(accentColor: color));
+        persistAccentColor(color);
+      }
+    });
   }
 
   persistBrightness(bool value) async {

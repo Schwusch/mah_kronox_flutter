@@ -31,11 +31,10 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   fetchAndSetBookings() {
-    if(scheduleStore.state.currentSchedule != null) {
+    if (scheduleStore.state.currentSchedule != null) {
       fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
         scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-            weeks: buildWeeksStructureMap(bookings)
-        ));
+            weeks: buildWeeksStructureMap(bookings)));
       });
     }
   }
@@ -58,101 +57,87 @@ class _SchedulePageState extends State<SchedulePage> {
     String teachers = "";
     Map signaturemap = scheduleStore.state.signatureMap;
 
-    for(String teacher in booking.signatures) {
+    for (String teacher in booking.signatures) {
       teachers += (signaturemap[teacher] ?? teacher) + ", ";
     }
 
-    Iterable<Widget> locations = booking.location.split(" ").map((loc) =>
-      new Text(
-        loc,
-        style: new TextStyle(color: themeStore.state.accentColor.shade700),
-      ));
+    Iterable<Widget> locations =
+        booking.location.split(" ").map((loc) => new Text(
+              loc,
+              style:
+                  new TextStyle(color: themeStore.state.accentColor.shade700),
+            ));
 
     List<Widget> leftColumnChildren = [
-      new Text(
-          timeFormatter.format(booking.start),
+      new Text(timeFormatter.format(booking.start),
           style: new TextStyle(
-            fontSize: 24.0,
-            color: themeStore.state.primaryColor.shade200,
-            fontWeight: FontWeight.bold
-          )
-      ),
-      new Text(
-          timeFormatter.format(booking.end),
+              fontSize: 24.0,
+              color: themeStore.state.primaryColor.shade200,
+              fontWeight: FontWeight.bold)),
+      new Text(timeFormatter.format(booking.end),
           style: new TextStyle(
-            fontSize: 24.0,
-            color: themeStore.state.theme.textTheme.caption.color,
-            fontWeight: FontWeight.bold
-          )
-      ),
+              fontSize: 24.0,
+              color: themeStore.state.theme.textTheme.caption.color,
+              fontWeight: FontWeight.bold)),
     ];
 
     leftColumnChildren.addAll(locations);
 
     return new Card(
-      elevation: 3.0,
-      child: new Container(
-        child: new Row(
-          children: <Widget>[
-            new Container(
-              child: new Column(
-                children: leftColumnChildren,
+        elevation: 3.0,
+        child: new Container(
+          child: new Row(
+            children: <Widget>[
+              new Container(
+                child: new Column(
+                  children: leftColumnChildren,
+                ),
+                padding: new EdgeInsets.all(5.0),
+                width: 110.0,
               ),
-              padding: new EdgeInsets.all(5.0),
-              width: 110.0,
-            ),
-            new Flexible(
-              child: new Container(
+              new Flexible(
+                  child: new Container(
                 child: new Column(
                   children: <Widget>[
                     new Text(booking.course),
-                    new Text(
-                      teachers,
-                      style: new TextStyle(
-                        color: themeStore.state.theme.textTheme.caption.color,
-                        fontWeight: FontWeight.bold
-                      )
-                    ),
+                    new Text(teachers,
+                        style: new TextStyle(
+                            color:
+                                themeStore.state.theme.textTheme.caption.color,
+                            fontWeight: FontWeight.bold)),
                     new Text(booking.moment)
                   ],
                   crossAxisAlignment: CrossAxisAlignment.start,
                 ),
                 padding: new EdgeInsets.all(5.0),
-              )
-            )
-          ],
-        ),
-      )
-    );
+              ))
+            ],
+          ),
+        ));
   }
 
   Widget _createDayCard(Day day) {
     return new Column(
-        children: <Widget>[
-          new Row(
-              children: <Widget>[
-                new Padding(
-                    padding: new EdgeInsets.symmetric(
-                        vertical: 2.0,
-                        horizontal: 10.0
-                    ),
-                    child: new Text(
-                        day.date,
-                        textAlign: TextAlign.center,
-                        style: new TextStyle(
-                            fontWeight: FontWeight.w500
-                        ),
-                    )
-                ),
-              ],
-          ),
-          new Padding(
-              padding: new EdgeInsets.all(5.0),
-              child: new Column(
-                  children: day.bookings.map((booking) => _createScheduleItem(booking)).toList(growable: false)
-              )
-          )
-        ],
+      children: <Widget>[
+        new Row(
+          children: <Widget>[
+            new Padding(
+                padding:
+                    new EdgeInsets.symmetric(vertical: 2.0, horizontal: 10.0),
+                child: new Text(
+                  day.date,
+                  textAlign: TextAlign.center,
+                  style: new TextStyle(fontWeight: FontWeight.w500),
+                )),
+          ],
+        ),
+        new Padding(
+            padding: new EdgeInsets.all(5.0),
+            child: new Column(
+                children: day.bookings
+                    .map((booking) => _createScheduleItem(booking))
+                    .toList(growable: false)))
+      ],
     );
   }
 
@@ -161,33 +146,34 @@ class _SchedulePageState extends State<SchedulePage> {
     widgets.add(new Card(
       color: themeStore.state.theme.primaryColor,
       elevation: 5.0,
-      child: new Text(
-          "v.${week.number}",
+      child: new Text("v.${week.number}",
           textScaleFactor: 2.0,
           textAlign: TextAlign.center,
-          style: themeStore.state.theme.primaryTextTheme.body1
-      ),
+          style: themeStore.state.theme.primaryTextTheme.body1),
     ));
 
     widgets.addAll(week.days.map((day) => _createDayCard(day)));
 
     return new Card(
       child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: widgets
-      ),
-      color: themeStore.state.brightness == Brightness.light ? themeStore.state.primaryColor.shade50 : themeStore.state.theme.canvasColor,
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: widgets),
+      color: themeStore.state.brightness == Brightness.light
+          ? themeStore.state.primaryColor.shade50
+          : themeStore.state.theme.canvasColor,
     );
   }
 
   List<Widget> _buildSchedule() {
-    return scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule?.name].map((week) =>
-        _createWeekCard(week)).toList(growable: false
-    );
+    return scheduleStore
+        .state.weeksMap[scheduleStore.state.currentSchedule?.name]
+        .map((week) => _createWeekCard(week))
+        .toList(growable: false);
   }
 
   Widget buildBody() {
-    if(scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule?.name] != null) {
+    if (scheduleStore
+            .state.weeksMap[scheduleStore.state.currentSchedule?.name] !=
+        null) {
       return new ListView(
         padding: new EdgeInsets.all(5.0),
         reverse: false,
@@ -203,12 +189,11 @@ class _SchedulePageState extends State<SchedulePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-          title: new Text(scheduleStore.state.currentSchedule?.givenName ?? widget.title),
-      ),
-      body: buildBody(),
-      drawer: new ScheduleDrawer()
-    );
+        appBar: new AppBar(
+          title: new Text(
+              scheduleStore.state.currentSchedule?.givenName ?? widget.title),
+        ),
+        body: buildBody(),
+        drawer: new ScheduleDrawer());
   }
 }
-

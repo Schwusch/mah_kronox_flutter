@@ -18,9 +18,9 @@ class SearchPage extends StatefulWidget {
   _SearchPageState createState() => new _SearchPageState();
 }
 
-
 class _SearchPageState extends State<SearchPage> {
-  final ValueChangedStreamCallback<String> onTextChanged = new ValueChangedStreamCallback<String>();
+  final ValueChangedStreamCallback<String> onTextChanged =
+      new ValueChangedStreamCallback<String>();
   final List<Map> searchResults = <Map>[];
   final TextEditingController _textController = new TextEditingController();
   Choice _selectedChoice = choices[0]; // The app's "state".
@@ -58,7 +58,7 @@ class _SearchPageState extends State<SearchPage> {
         .listen((List<Map> latestResult) {
           setState(() {
             loading = false;
-            if(latestResult.isNotEmpty) {
+            if (latestResult.isNotEmpty) {
               searchResults.addAll(latestResult);
             }
           });
@@ -80,14 +80,14 @@ class _SearchPageState extends State<SearchPage> {
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
     var httpClient = createHttpClient();
-    return  new Observable<String>.fromFuture(
-        httpClient.read("https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}")
-    )
+    return new Observable<String>.fromFuture(httpClient.read(
+            "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}"))
         .map((String response) => JSON.decode(response));
   }
 
   void _select(Choice choice) {
-    setState(() { // Causes the app to rebuild with the new _selectedChoice.
+    setState(() {
+      // Causes the app to rebuild with the new _selectedChoice.
       _textController.clear();
       searchResults.clear();
       _selectedChoice = choice;
@@ -96,77 +96,74 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return new IconTheme(
         data: new IconThemeData(color: Theme.of(context).accentColor),
         child: new Scaffold(
-          appBar: new AppBar(
-            title: buildSearch(),
-          ),
-          body: loading ? new Center(child: new CircularProgressIndicator()) : buildResults()
-        )
-    );
+            appBar: new AppBar(
+              title: buildSearch(),
+            ),
+            body: loading
+                ? new Center(child: new CircularProgressIndicator())
+                : buildResults()));
   }
 
   Widget buildSearch() {
     return new Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: new Row(
-        children: <Widget>[
-          new Flexible(
-            child: new TextField(
-              style: new TextStyle(fontSize: 20.0),
-              autofocus: true,
-              onChanged: onTextChanged,
-              decoration: new InputDecoration.collapsed(
-                  hintText: "Search for ${_selectedChoice.title}"),
-              controller: _textController,
-            ),
+      child: new Row(children: <Widget>[
+        new Flexible(
+          child: new TextField(
+            style: new TextStyle(fontSize: 20.0),
+            autofocus: true,
+            onChanged: onTextChanged,
+            decoration: new InputDecoration.collapsed(
+                hintText: "Search for ${_selectedChoice.title}"),
+            controller: _textController,
           ),
-          new Container(
-              child: new IconButton(
-                  icon: _textController.text.isEmpty ? new Icon(Icons.search) : new Icon(Icons.clear),
-                  onPressed: _textController.text.isEmpty ? null : _textController.clear,
-              )
-          ),
-          new PopupMenuButton<Choice>( // overflow menu
-            onSelected: _select,
-            itemBuilder: (BuildContext context) {
-              return choices.map((Choice choice) {
-                return new PopupMenuItem<Choice>(
-                  value: choice,
-                  child: new Text(choice.title),
-                );
-              }).toList();
-            },
-          ),
-        ]
-      ),
+        ),
+        new Container(
+            child: new IconButton(
+          icon: _textController.text.isEmpty
+              ? new Icon(Icons.search)
+              : new Icon(Icons.clear),
+          onPressed:
+              _textController.text.isEmpty ? null : _textController.clear,
+        )),
+        new PopupMenuButton<Choice>(
+          // overflow menu
+          onSelected: _select,
+          itemBuilder: (BuildContext context) {
+            return choices.map((Choice choice) {
+              return new PopupMenuItem<Choice>(
+                value: choice,
+                child: new Text(choice.title),
+              );
+            }).toList();
+          },
+        ),
+      ]),
     );
   }
 
   Widget buildResults() {
-    return new Builder(
-        builder: (BuildContext context) {
-          return new Column(
-              children: <Widget>[
-                new Flexible(
-                    child: new ListView.builder(
-                      padding: new EdgeInsets.all(8.0),
-                      reverse: false,
-                      itemBuilder: (_, index) => buildResultCard(searchResults[index], context),
-                      itemCount: searchResults.length,
-                    )
-                )
-              ]
-          );
-        }
-    );
+    return new Builder(builder: (BuildContext context) {
+      return new Column(children: <Widget>[
+        new Flexible(
+            child: new ListView.builder(
+          padding: new EdgeInsets.all(8.0),
+          reverse: false,
+          itemBuilder: (_, index) =>
+              buildResultCard(searchResults[index], context),
+          itemCount: searchResults.length,
+        ))
+      ]);
+    });
   }
 
   Widget buildResultCard(Map result, BuildContext context) {
     String name = result["value"];
-    String description = result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
+    String description =
+        result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
     TextEditingController controller = new TextEditingController(text: name);
 
     Function onPressed = () {
@@ -183,31 +180,33 @@ class _SearchPageState extends State<SearchPage> {
                   onPressed: () {
                     String givenName = controller.text;
 
-                    scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
-                        givenName: givenName,
-                        name: name,
-                        type: _selectedChoice.value,
-                        description: description
-                    )));
+                    scheduleStore.dispatch(new AddScheduleAction(
+                        schedule: new ScheduleMeta(
+                            givenName: givenName,
+                            name: name,
+                            type: _selectedChoice.value,
+                            description: description)));
 
                     Scaffold.of(context).showSnackBar(new SnackBar(
-                      content: new Text("Lade till " + givenName),
-                      action: new SnackBarAction(label: "Ångra", onPressed: () {
-                        scheduleStore.dispatch(new RemoveScheduleAction(schedule: name));
+                          content: new Text("Lade till " + givenName),
+                          action: new SnackBarAction(
+                              label: "Ångra",
+                              onPressed: () {
+                                scheduleStore.dispatch(
+                                    new RemoveScheduleAction(schedule: name));
 
-                        Scaffold.of(context).showSnackBar(new SnackBar(
-                          content: new Text("Ångrade tillägning av " + givenName),
+                                Scaffold.of(context).showSnackBar(new SnackBar(
+                                      content: new Text(
+                                          "Ångrade tillägning av " + givenName),
+                                    ));
+                              }),
                         ));
-                      }),
-                    ));
 
                     Navigator.of(context).pop();
                   },
-                  child: new Text("Lägg till")
-              ),
+                  child: new Text("Lägg till")),
             ],
-          )
-      );
+          ));
     };
 
     return new Card(
@@ -223,9 +222,11 @@ class _SearchPageState extends State<SearchPage> {
             child: new ButtonBar(
               children: <Widget>[
                 new FlatButton(
-                  child: const Text('Lägg till schema'),
-                  onPressed: scheduleStore.state.schedules.any((schedule) =>  schedule.name == name) ? null : onPressed
-                )
+                    child: const Text('Lägg till schema'),
+                    onPressed: scheduleStore.state.schedules
+                            .any((schedule) => schedule.name == name)
+                        ? null
+                        : onPressed)
               ],
             ),
           ),
@@ -236,7 +237,7 @@ class _SearchPageState extends State<SearchPage> {
 }
 
 class Choice {
-  const Choice({ this.title, this.value });
+  const Choice({this.title, this.value});
   final String title;
   final String value;
 }

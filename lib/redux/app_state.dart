@@ -16,9 +16,9 @@ class ThemeState {
 
   ThemeState({this.brightness, this.primaryColor, this.accentColor})
       : _theme = new ThemeData(
-      brightness: brightness,
-      primarySwatch: primaryColor,
-      accentColor: accentColor);
+            brightness: brightness,
+            primarySwatch: primaryColor,
+            accentColor: accentColor);
 
   factory ThemeState.initial() => new ThemeState(
       brightness: Brightness.light,
@@ -27,8 +27,8 @@ class ThemeState {
 
   ThemeState apply(
       {Brightness brightness,
-        MaterialColor primaryColor,
-        MaterialAccentColor accentColor}) {
+      MaterialColor primaryColor,
+      MaterialAccentColor accentColor}) {
     return new ThemeState(
         brightness: brightness ?? this.brightness,
         primaryColor: primaryColor ?? this.primaryColor,
@@ -42,38 +42,36 @@ class ScheduleState {
   final Map<String, List<Week>> weeksMap;
   final Map<String, String> signatureMap;
 
-  ScheduleState({this.schedules, this.currentSchedule, this.weeksMap, this.signatureMap});
+  ScheduleState(
+      {this.schedules, this.currentSchedule, this.weeksMap, this.signatureMap});
 
   factory ScheduleState.initial() => new ScheduleState(
-    schedules: <ScheduleMeta>[],
-    currentSchedule: null,
-    weeksMap: new Map(),
-    signatureMap: new Map()
-  );
+      schedules: <ScheduleMeta>[],
+      currentSchedule: null,
+      weeksMap: new Map(),
+      signatureMap: new Map());
 
-  ScheduleState apply({
-    List<ScheduleMeta> schedules,
-    ScheduleMeta currentSchedule,
-    Map<String, List<Week>> weeksMap,
-    Map<String, String> signatureMap}) {
-
+  ScheduleState apply(
+      {List<ScheduleMeta> schedules,
+      ScheduleMeta currentSchedule,
+      Map<String, List<Week>> weeksMap,
+      Map<String, String> signatureMap}) {
     return new ScheduleState(
-      schedules: schedules ?? this.schedules,
-      currentSchedule: currentSchedule ?? this.currentSchedule,
-      weeksMap: weeksMap ?? this.weeksMap,
-      signatureMap: signatureMap ?? this.signatureMap
-    );
+        schedules: schedules ?? this.schedules,
+        currentSchedule: currentSchedule ?? this.currentSchedule,
+        weeksMap: weeksMap ?? this.weeksMap,
+        signatureMap: signatureMap ?? this.signatureMap);
   }
 
   Map<String, dynamic> serialize() {
     Map<String, dynamic> weeksMapsSerialized = new Map();
-    weeksMap.forEach((key, value) =>
-      weeksMapsSerialized[key] = value.map((week) => week.serialize()).toList()
-    );
+    weeksMap.forEach((key, value) => weeksMapsSerialized[key] =
+        value.map((week) => week.serialize()).toList());
 
     return {
       "signatureMap": signatureMap,
-     "schedules": schedules.map((meta) => meta.serialize()).toList(growable: false),
+      "schedules":
+          schedules.map((meta) => meta.serialize()).toList(growable: false),
       "currentSchedule": currentSchedule?.serialize(),
       "weeksMap": weeksMapsSerialized
     };
@@ -81,15 +79,15 @@ class ScheduleState {
 
   static ScheduleState deserialize(Map<String, dynamic> state) {
     Map<String, dynamic> weeksMapsDeserialized = new Map();
-    state["weeksMap"]?.forEach((key, value) =>
-        weeksMapsDeserialized[key] = value.map((week) => Week.deserialize(week)).toList()
-    );
+    state["weeksMap"]?.forEach((key, value) => weeksMapsDeserialized[key] =
+        value.map((week) => Week.deserialize(week)).toList());
 
     return new ScheduleState(
-      signatureMap: state["signatureMap"],
-      schedules: state["schedules"].map((schedule) => ScheduleMeta.deserialize(schedule)).toList(),
-      currentSchedule: ScheduleMeta.deserialize(state["currentSchedule"]),
-      weeksMap: weeksMapsDeserialized
-    );
+        signatureMap: state["signatureMap"],
+        schedules: state["schedules"]
+            .map((schedule) => ScheduleMeta.deserialize(schedule))
+            .toList(),
+        currentSchedule: ScheduleMeta.deserialize(state["currentSchedule"]),
+        weeksMap: weeksMapsDeserialized);
   }
 }

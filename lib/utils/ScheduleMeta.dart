@@ -1,4 +1,3 @@
-
 class ScheduleMeta {
   final String givenName;
   final String name;
@@ -17,11 +16,12 @@ class ScheduleMeta {
   }
 
   static ScheduleMeta deserialize(Map<String, dynamic> meta) {
-    return meta != null ? new ScheduleMeta(
-      givenName: meta["givenName"],
-      name: meta["name"],
-      type: meta["type"],
-      description: meta["description"]
-    ) : new ScheduleMeta();
+    return meta != null
+        ? new ScheduleMeta(
+            givenName: meta["givenName"],
+            name: meta["name"],
+            type: meta["type"],
+            description: meta["description"])
+        : new ScheduleMeta();
   }
 }

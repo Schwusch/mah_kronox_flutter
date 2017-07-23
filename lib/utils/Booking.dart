@@ -34,6 +34,4 @@ class Booking {
   }
 }
 
-class BookingSerializer {
-
-}
+class BookingSerializer {}

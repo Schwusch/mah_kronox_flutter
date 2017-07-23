@@ -6,8 +6,7 @@ import 'redux/actions.dart';
 import 'SettingsPage.dart';
 import 'SearchPage.dart';
 
-class ScheduleDrawer extends StatefulWidget{
-
+class ScheduleDrawer extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _ScheduleDrawerState();
 }
@@ -17,9 +16,8 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
 
   refreshAllSchedules() {
     fetchAllSchedules(scheduleStore.state.schedules).then((weeks) {
-      scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-          weeks: weeks
-      ));
+      scheduleStore
+          .dispatch(new SetWeeksForCurrentScheduleAction(weeks: weeks));
     });
   }
 
@@ -33,15 +31,13 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         onTap: () => Navigator.of(context).pushNamed(SettingsPage.path),
       ),
       new Divider(),
-      new ListTile(
-          title: new Text("Mina Sheman"),
-          dense: true
-      ),
+      new ListTile(title: new Text("Mina Sheman"), dense: true),
       new ListTile(
         leading: new Icon(Icons.all_inclusive),
         title: new Text("Visa alla scheman"),
         onTap: () {
-          scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: new ScheduleMeta(
+          scheduleStore.dispatch(new SetCurrentScheduleAction(
+              schedule: new ScheduleMeta(
             givenName: "Alla mina scheman",
             name: "all",
             description: "Alla mina scheman",
@@ -58,7 +54,8 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         leading: new Icon(Icons.schedule),
         title: new Text(schedule.givenName),
         onTap: () {
-          scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
+          scheduleStore
+              .dispatch(new SetCurrentScheduleAction(schedule: schedule));
           refreshAllSchedules();
           Navigator.of(context).pop();
         },
@@ -72,19 +69,15 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
                   new FlatButton(
                       onPressed: () {
                         scheduleStore.dispatch(
-                          new RemoveScheduleAction(schedule: schedule.name)
-                        );
+                            new RemoveScheduleAction(schedule: schedule.name));
                         Navigator.of(context).pop();
                       },
-                      child: new Text("Ta bort")
-                  ),
+                      child: new Text("Ta bort")),
                   new FlatButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: new Text("Tillbaka")
-                  )
+                      child: new Text("Tillbaka"))
                 ],
-              )
-          );
+              ));
         },
       );
     }));
@@ -103,9 +96,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
     ]);
 
     return new Drawer(
-      child: new ListView(
-        children: children
-      ),
+      child: new ListView(children: children),
     );
   }
 
@@ -124,17 +115,14 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
   }
 }
 
-class ScheduleDrawerHeader extends StatelessWidget{
-
+class ScheduleDrawerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new UserAccountsDrawerHeader(
       decoration: new BoxDecoration(
           image: new DecorationImage(
               image: new AssetImage("assets/images/mah.jpg"),
-              fit: BoxFit.cover
-          )
-      ),
+              fit: BoxFit.cover)),
       accountName: new Text("Malmö Högskola"),
       accountEmail: null,
       currentAccountPicture: new CircleAvatar(

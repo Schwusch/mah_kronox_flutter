@@ -7,7 +7,9 @@ import '../utils/fileStorage.dart';
 T orElseNull<T>() => null;
 
 class ThemeReducer extends redux.Reducer<ThemeState, Action> {
-  final Map<Type, Function> _mapper = const <Type, Function>{ChangeThemeAction: _changeThemeAction};
+  final Map<Type, Function> _mapper = const <Type, Function>{
+    ChangeThemeAction: _changeThemeAction
+  };
 
   @override
   ThemeState reduce(ThemeState state, Action action) {
@@ -42,31 +44,39 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
   }
 }
 
-ScheduleState _setCurrentScheduleAction(ScheduleState state, SetCurrentScheduleAction action) {
+ScheduleState _setCurrentScheduleAction(
+    ScheduleState state, SetCurrentScheduleAction action) {
   ScheduleState newState = state.apply(currentSchedule: action.schedule);
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
-ScheduleState _addScheduleAction(ScheduleState state, AddScheduleAction action) {
-  ScheduleState newState = state.apply(schedules: state.schedules.toList()..add(action.schedule));
+ScheduleState _addScheduleAction(
+    ScheduleState state, AddScheduleAction action) {
+  ScheduleState newState =
+      state.apply(schedules: state.schedules.toList()..add(action.schedule));
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
-ScheduleState _removeScheduleAction(ScheduleState state, RemoveScheduleAction action) {
-  ScheduleState newState = state.apply(schedules: state.schedules.toList()..removeWhere((schedule) => schedule.name == action.schedule));
+ScheduleState _removeScheduleAction(
+    ScheduleState state, RemoveScheduleAction action) {
+  ScheduleState newState = state.apply(
+      schedules: state.schedules.toList()
+        ..removeWhere((schedule) => schedule.name == action.schedule));
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
-ScheduleState _setWeeksForCurrentScheduleAction(ScheduleState state, SetWeeksForCurrentScheduleAction action) {
+ScheduleState _setWeeksForCurrentScheduleAction(
+    ScheduleState state, SetWeeksForCurrentScheduleAction action) {
   ScheduleState newState = state.apply(weeksMap: action.weeks);
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
-ScheduleState _setSignatureMapAction(ScheduleState state, SetSignatureMap action) {
+ScheduleState _setSignatureMapAction(
+    ScheduleState state, SetSignatureMap action) {
   ScheduleState newState = state.apply(signatureMap: action.signatures);
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;

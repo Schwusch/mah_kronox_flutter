@@ -12,30 +12,32 @@ import 'package:tuple/tuple.dart';
 import '../redux/store.dart';
 import '../redux/actions.dart';
 
-Future<Map<String, List<Week>>> fetchAllSchedules(List<ScheduleMeta> programs) async {
+Future<Map<String, List<Week>>> fetchAllSchedules(
+    List<ScheduleMeta> programs) async {
   var allBookings = await fetchAllBookings(programs);
   return buildWeeksStructureMap(allBookings);
 }
 
-
-Future<Map<ScheduleMeta, List<Booking>>> fetchAllBookings(List<ScheduleMeta> programs) async {
+Future<Map<ScheduleMeta, List<Booking>>> fetchAllBookings(
+    List<ScheduleMeta> programs) async {
   List<Future<Tuple2<ScheduleMeta, List<Booking>>>> futures = [];
 
-  for(ScheduleMeta program in programs) {
+  for (ScheduleMeta program in programs) {
     futures.add(fetchBookings(program));
   }
-  
+
   List<Tuple2<ScheduleMeta, List<Booking>>> tuples = await Future.wait(futures);
   Map<ScheduleMeta, List<Booking>> bookingMap = new Map();
 
-  for(Tuple2<ScheduleMeta, List<Booking>> tuple in tuples) {
+  for (Tuple2<ScheduleMeta, List<Booking>> tuple in tuples) {
     bookingMap[tuple.item1] = tuple.item2;
   }
 
   return bookingMap;
 }
 
-Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) async {
+Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(
+    ScheduleMeta program) async {
   var httpClient = createHttpClient();
   String ical = await httpClient.read(
       "https://kronox.mah.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sokMedAND=false&sprak=SV&resurser=${program.type[0]}.${program.name}");
@@ -58,23 +60,21 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) 
     String moment = "";
     RegExp exp = new RegExp(r".*?\:\s.*?(?=Sign:|Moment:|Program:)|.*");
     Iterable<Match> matches = exp.allMatches(summary);
-    
+
     for (Match m in matches) {
       String match = m.group(0);
       if (match.contains("Kurs.grp: ")) {
         course = match.replaceAll("Kurs.grp: ", "");
-
-      } else if(match.contains("Sign: ")) {
+      } else if (match.contains("Sign: ")) {
         signatures = match.replaceAll("Sign: ", "").trim().split(" ");
-        
-      } else if(match.contains("Moment: ")) {
+      } else if (match.contains("Moment: ")) {
         moment = match.replaceAll("Moment: ", "");
       }
     }
 
     DateTime start = x.properties["DTSTART"];
     DateTime end = x.properties["DTEND"];
-    
+
     e.location = x.properties["LOCATION"];
     e.start = start.toLocal();
     e.end = end.toLocal();
@@ -92,22 +92,22 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) 
 getAllSignaturesFromBookings(List<Booking> bookings) async {
   Set<String> signatures = new Set<String>();
 
-  for(Booking booking in bookings) {
-    for(String signature in booking.signatures) {
+  for (Booking booking in bookings) {
+    for (String signature in booking.signatures) {
       signatures.add(signature);
     }
   }
 
   List<Future<String>> futures = [];
 
-  for(String signature in signatures) {
+  for (String signature in signatures) {
     futures.add(getSignature(signature));
   }
 
   List<String> signatureTuples = await Future.wait(futures);
   Map<String, String> signatureMap = new Map();
 
-  for(String str in signatureTuples) {
+  for (String str in signatureTuples) {
     List<String> splitted = str.split(", ");
     signatureMap[splitted[0]] = splitted[1];
   }
@@ -117,7 +117,8 @@ getAllSignaturesFromBookings(List<Booking> bookings) async {
 
 Future<String> getSignature(String signature) async {
   var http = createHttpClient();
-  String response = await http.read("https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=signatur&endastForkortningar=true&term=${signature}");
+  String response = await http.read(
+      "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=signatur&endastForkortningar=true&term=${signature}");
   List decoded = JSON.decode(response);
   String html = decoded[0]["label"];
 
@@ -125,7 +126,8 @@ Future<String> getSignature(String signature) async {
   return name;
 }
 
-Map<String, List<Week>> buildWeeksStructureMap(Map<ScheduleMeta, List<Booking>> bookingsMap) {
+Map<String, List<Week>> buildWeeksStructureMap(
+    Map<ScheduleMeta, List<Booking>> bookingsMap) {
   Map<String, List<Week>> weekMap = new Map();
   List<Booking> allBookings = [];
 
@@ -146,7 +148,7 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
   //DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy", "sv");
 
-  if(bookings.isNotEmpty) {
+  if (bookings.isNotEmpty) {
     // Sort bookings by DateTime
     bookings.sort((a, b) => a.start.compareTo(b.start));
 
@@ -154,34 +156,27 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
 
     Day day = new Day(
         bookings: <Booking>[lastBooking],
-        date: dateFormatter.format(lastBooking.start)
-    );
+        date: dateFormatter.format(lastBooking.start));
 
-    Week week = new Week(
-        days: <Day>[day],
-        number: weekOfYear(lastBooking.start)
-    );
+    Week week =
+        new Week(days: <Day>[day], number: weekOfYear(lastBooking.start));
 
     weeks.add(week);
 
-    for(Booking booking in bookings) {
-      if(weekOfYear(booking.start) != week.number) {
+    for (Booking booking in bookings) {
+      if (weekOfYear(booking.start) != week.number) {
         day = new Day(
             bookings: <Booking>[booking],
-            date: dateFormatter.format(booking.start)
-        );
+            date: dateFormatter.format(booking.start));
 
-        week = new Week(
-            days: <Day>[day],
-            number: weekOfYear(booking.start)
-        );
+        week = new Week(days: <Day>[day], number: weekOfYear(booking.start));
 
         weeks.add(week);
-      } else if(lastBooking.start.day != booking.start.day || lastBooking.start.month != booking.start.month) {
+      } else if (lastBooking.start.day != booking.start.day ||
+          lastBooking.start.month != booking.start.month) {
         day = new Day(
             bookings: <Booking>[booking],
-            date: dateFormatter.format(booking.start)
-        );
+            date: dateFormatter.format(booking.start));
         week.days.add(day);
       } else if (lastBooking.uuid != booking.uuid) {
         day.bookings.add(booking);

@@ -8,15 +8,18 @@ class Day {
 
   Map<String, dynamic> serialize() {
     return {
-      "bookings": bookings.map((booking) => booking.serialize()).toList(growable: false),
+      "bookings": bookings
+          .map((booking) => booking.serialize())
+          .toList(growable: false),
       "date": date
     };
   }
 
   static Day deserialize(Map<String, dynamic> day) {
     return new Day(
-      bookings: day["bookings"].map((booking) => Booking.deserialize(booking)).toList(),
-      date: day["date"]
-    );
+        bookings: day["bookings"]
+            .map((booking) => Booking.deserialize(booking))
+            .toList(),
+        date: day["date"]);
   }
 }

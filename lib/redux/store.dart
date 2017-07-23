@@ -5,16 +5,17 @@ import 'package:redux/redux.dart' as redux;
 
 class ThemeStore extends redux.Store<ThemeState, Action> {
   ThemeStore(
-      {ThemeState initialState,
-        redux.Reducer<ThemeState, Action> reducer})
+      {ThemeState initialState, redux.Reducer<ThemeState, Action> reducer})
       : super(reducer ?? new ThemeReducer(),
-      initialState: initialState ?? new ThemeState.initial());
+            initialState: initialState ?? new ThemeState.initial());
 }
 
 class ScheduleStore extends redux.Store<ScheduleState, Action> {
-  ScheduleStore({ScheduleState initialState, redux.Reducer<ScheduleState, Action> reducer})
-    : super(reducer ?? new ScheduleReducer(),
-      initialState: initialState ?? new ScheduleState.initial());
+  ScheduleStore(
+      {ScheduleState initialState,
+      redux.Reducer<ScheduleState, Action> reducer})
+      : super(reducer ?? new ScheduleReducer(),
+            initialState: initialState ?? new ScheduleState.initial());
 }
 
 ThemeStore themeStore;
