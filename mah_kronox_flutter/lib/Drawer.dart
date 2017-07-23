@@ -55,7 +55,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
     children.addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
       return new ListTile(
         leading: new Icon(Icons.schedule),
-        title: new Text(schedule.name),
+        title: new Text(schedule.givenName),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
           refreshAllSchedules();
@@ -66,7 +66,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
               context: context,
               child: new AlertDialog(
                 title: new Text("Ta bort schema"),
-                content: new Text("Vill du ta bort ${schedule.name}?"),
+                content: new Text("Vill du ta bort ${schedule.givenName}?"),
                 actions: <Widget>[
                   new FlatButton(
                       onPressed: () {

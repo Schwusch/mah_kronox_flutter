@@ -156,6 +156,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget buildResultCard(Map result, BuildContext context) {
     String description = result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
+    TextEditingController controller = new TextEditingController(text: result["value"]);
 
     return new Card(
       child: new Column(
@@ -172,22 +173,44 @@ class _SearchPageState extends State<SearchPage> {
                 new FlatButton(
                   child: const Text('Lägg till schema'),
                   onPressed: () {
-                    scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
-                      name: result['value'],
-                      type: _selectedChoice.value,
-                      description: description
-                    )));
+                    showDialog(
+                      context: context,
+                      child: new AlertDialog(
+                        title: new Text("Namnge ditt schema"),
+                        content: new TextField(
+                          autofocus: true,
+                          controller: controller,
+                        ),
+                        actions: <Widget>[
+                          new FlatButton(
+                              onPressed: () {
+                                String givenName = controller.text;
 
-                    Scaffold.of(context).showSnackBar(new SnackBar(
-                        content: new Text("Lade till " + result["value"]),
-                        action: new SnackBarAction(label: "Ångra", onPressed: () {
-                          scheduleStore.dispatch(new RemoveScheduleAction(schedule: result['value']));
+                                scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
+                                    givenName: givenName,
+                                    name: result['value'],
+                                    type: _selectedChoice.value,
+                                    description: description
+                                )));
 
-                          Scaffold.of(context).showSnackBar(new SnackBar(
-                            content: new Text("Ångrade tillägning av " + result["value"]),
-                          ));
-                        }),
-                    ));
+                                Scaffold.of(context).showSnackBar(new SnackBar(
+                                  content: new Text("Lade till " + givenName),
+                                  action: new SnackBarAction(label: "Ångra", onPressed: () {
+                                    scheduleStore.dispatch(new RemoveScheduleAction(schedule: result['value']));
+
+                                    Scaffold.of(context).showSnackBar(new SnackBar(
+                                      content: new Text("Ångrade tillägning av " + givenName),
+                                    ));
+                                  }),
+                                ));
+
+                                Navigator.of(context).pop();
+                              },
+                              child: new Text("Lägg till")
+                          ),
+                        ],
+                      )
+                    );
                   },
                 ),
               ],

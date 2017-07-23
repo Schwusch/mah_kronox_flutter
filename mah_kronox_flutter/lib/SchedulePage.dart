@@ -191,7 +191,7 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-          title: new Text(scheduleStore.state.currentSchedule.name ?? widget.title),
+          title: new Text(scheduleStore.state.currentSchedule.givenName ?? widget.title),
       ),
       body: buildBody(),
       drawer: new ScheduleDrawer()
