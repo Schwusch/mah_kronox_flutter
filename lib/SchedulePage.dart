@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -22,21 +23,40 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   var _subscribtion;
   List<Booking> bookings = [];
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
 
   _SchedulePageState() {
-    fetchAndSetBookings();
+    if (scheduleStore.state.schedules.isNotEmpty) {
+      fetchAndSetBookings();
+    }
   }
 
-  fetchAndSetBookings() {
+  Future<Null> fetchAndSetBookings() {
+    final Completer<Null> completer = new Completer<Null>();
     if (scheduleStore.state.currentSchedule != null) {
       fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
+        completer.complete(null);
         scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
             weeks: buildWeeksStructureMap(bookings)));
       });
+    } else {
+      completer.complete(null);
     }
+
+    return completer.future.then((_) {
+      _scaffoldKey.currentState?.showSnackBar(new SnackBar(
+          content: const Text("Scheman uppdaterade"),
+          action: new SnackBarAction(
+              label: 'RETRY',
+              onPressed: () {
+                _refreshIndicatorKey.currentState.show();
+              })));
+    });
   }
 
   @override
@@ -189,11 +209,24 @@ class _SchedulePageState extends State<SchedulePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+        key: _scaffoldKey,
         appBar: new AppBar(
-          title: new Text(
-              scheduleStore.state.currentSchedule?.givenName ?? widget.title),
-        ),
-        body: buildBody(),
+            title: new Text(
+                scheduleStore.state.currentSchedule?.givenName ?? widget.title),
+            actions: scheduleStore.state.currentSchedule != null
+                ? <Widget>[
+                    new IconButton(
+                        icon: const Icon(Icons.refresh),
+                        tooltip: 'Refresh',
+                        onPressed: () {
+                          _refreshIndicatorKey.currentState?.show();
+                        })
+                  ]
+                : null),
+        body: new RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: fetchAndSetBookings,
+            child: buildBody()),
         drawer: new ScheduleDrawer());
   }
 }

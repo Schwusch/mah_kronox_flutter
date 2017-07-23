@@ -75,7 +75,7 @@ class _AppState extends State<App> {
           SchedulePage.path: (BuildContext context) =>
               new SchedulePage(title: "Schemavisning"),
           SettingsPage.path: (BuildContext context) =>
-              new SettingsPage(title: "Inställingar"),
+              new SettingsPage(title: "Inställningar"),
           SearchPage.path: (BuildContext context) =>
               new SearchPage(title: "Sök")
         });
