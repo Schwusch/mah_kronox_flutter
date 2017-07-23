@@ -168,13 +168,13 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   List<Widget> _buildSchedule() {
-    return scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule].map((week) =>
+    return scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule.name].map((week) =>
         _createWeekCard(week)).toList(growable: false
     );
   }
 
   Widget buildBody() {
-    if(scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule] != null) {
+    if(scheduleStore.state.weeksMap[scheduleStore.state.currentSchedule.name] != null) {
       return new ListView(
         padding: new EdgeInsets.all(5.0),
         reverse: false,
@@ -191,7 +191,7 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-          title: new Text(scheduleStore.state.currentSchedule ?? widget.title),
+          title: new Text(scheduleStore.state.currentSchedule.name ?? widget.title),
       ),
       body: buildBody(),
       drawer: new ScheduleDrawer()

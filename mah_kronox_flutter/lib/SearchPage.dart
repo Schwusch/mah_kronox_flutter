@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_stream_friends/flutter_stream_friends.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
+import 'utils/ScheduleMeta.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key, this.title}) : super(key: key);
@@ -154,6 +155,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget buildResultCard(Map result, BuildContext context) {
+    String description = result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
+
     return new Card(
       child: new Column(
         mainAxisSize: MainAxisSize.min,
@@ -161,7 +164,7 @@ class _SearchPageState extends State<SearchPage> {
           new ListTile(
             leading: const Icon(Icons.schedule),
             title: new Text(result["value"]),
-            subtitle: new Text(result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "")),
+            subtitle: new Text(description),
           ),
           new ButtonTheme.bar(
             child: new ButtonBar(
@@ -169,7 +172,11 @@ class _SearchPageState extends State<SearchPage> {
                 new FlatButton(
                   child: const Text('Lägg till schema'),
                   onPressed: () {
-                    scheduleStore.dispatch(new AddScheduleAction(schedule: result['value']));
+                    scheduleStore.dispatch(new AddScheduleAction(schedule: new ScheduleMeta(
+                      name: result['value'],
+                      type: _selectedChoice.value,
+                      description: description
+                    )));
 
                     Scaffold.of(context).showSnackBar(new SnackBar(
                         content: new Text("Lade till " + result["value"]),

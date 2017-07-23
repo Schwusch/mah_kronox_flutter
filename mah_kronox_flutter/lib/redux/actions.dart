@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/Week.dart';
+import '../utils/ScheduleMeta.dart';
 
 abstract class Action {
   Action();
@@ -16,19 +17,19 @@ class ChangeThemeAction extends Action {
 }
 
 class AddScheduleAction extends Action {
-  final String schedule;
+  final ScheduleMeta schedule;
 
   AddScheduleAction({this.schedule});
 }
 
 class RemoveScheduleAction extends Action {
-  final String schedule;
+  final ScheduleMeta schedule;
 
   RemoveScheduleAction({this.schedule});
 }
 
 class SetCurrentScheduleAction extends Action {
-  final String schedule;
+  final ScheduleMeta schedule;
 
   SetCurrentScheduleAction({this.schedule});
 }

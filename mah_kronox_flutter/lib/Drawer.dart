@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'utils/fetchBookings.dart';
+import 'utils/ScheduleMeta.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'SettingsPage.dart';
@@ -30,10 +31,10 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
       ),
     ];
 
-    children.addAll(scheduleStore.state.schedules.map((String schedule) {
+    children.addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
       return new ListTile(
         leading: new Icon(Icons.schedule),
-        title: new Text(schedule),
+        title: new Text(schedule.name),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(schedule: schedule));
           fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
@@ -50,7 +51,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
               context: context,
               child: new AlertDialog(
                 title: new Text("Ta bort schema"),
-                content: new Text("Vill du ta bort ${schedule}?"),
+                content: new Text("Vill du ta bort ${schedule.name}?"),
                 actions: <Widget>[
                   new FlatButton(
                       onPressed: () {

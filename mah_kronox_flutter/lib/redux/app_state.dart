@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/Week.dart';
+import '../utils/ScheduleMeta.dart';
 
 class ThemeState {
   static final kBrightnessKey = "BrightnessKey";
@@ -36,15 +37,15 @@ class ThemeState {
 }
 
 class ScheduleState {
-  final List<String> schedules;
-  final String currentSchedule;
+  final List<ScheduleMeta> schedules;
+  final ScheduleMeta currentSchedule;
   final Map<String, List<Week>> weeksMap;
 
   ScheduleState({this.schedules, this.currentSchedule, this.weeksMap});
 
-  factory ScheduleState.initial() => new ScheduleState(schedules: <String>[], currentSchedule: null, weeksMap: new Map());
+  factory ScheduleState.initial() => new ScheduleState(schedules: <ScheduleMeta>[], currentSchedule: null, weeksMap: new Map());
 
-  ScheduleState apply({List<String> schedules, String currentSchedule, Map<String, List<Week>> weeksMap}) {
+  ScheduleState apply({List<ScheduleMeta> schedules, ScheduleMeta currentSchedule, Map<String, List<Week>> weeksMap}) {
     return new ScheduleState(
         schedules: schedules ?? this.schedules,
         currentSchedule: currentSchedule ?? this.currentSchedule,
@@ -59,8 +60,8 @@ class ScheduleState {
     );
 
     return {
-     "schedules": schedules,
-      "currentSchedule": currentSchedule,
+     "schedules": schedules.map((meta) => meta.serialize()).toList(growable: false),
+      "currentSchedule": currentSchedule?.serialize(),
       "weeksMap": weeksMapsSerialized
     };
   }
@@ -70,9 +71,10 @@ class ScheduleState {
     state["weeksMap"]?.forEach((key, value) =>
         weeksMapsDeserialized[key] = value.map((week) => Week.deserialize(week)).toList()
     );
+
     return new ScheduleState(
-      schedules: state["schedules"],
-      currentSchedule: state["currentSchedule"],
+      schedules: state["schedules"].map((schedule) => ScheduleMeta.deserialize(schedule)).toList(),
+      currentSchedule: ScheduleMeta.deserialize(state["currentSchedule"]),
       weeksMap: weeksMapsDeserialized
     );
   }

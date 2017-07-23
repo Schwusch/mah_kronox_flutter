@@ -5,29 +5,31 @@ import 'Booking.dart';
 import 'Week.dart';
 import 'Day.dart';
 import 'weekOfYear.dart';
+import 'ScheduleMeta.dart';
 import 'package:intl/intl.dart';
 import 'package:tuple/tuple.dart';
 
-Future<Map<String, List<Booking>>> fetchAllBookings(List<String> programs) async {
-  List<Future<Tuple2<String, List<Booking>>>> futures = [];
+Future<Map<ScheduleMeta, List<Booking>>> fetchAllBookings(List<ScheduleMeta> programs) async {
+  List<Future<Tuple2<ScheduleMeta, List<Booking>>>> futures = [];
 
-  for(String program in programs) {
+  for(ScheduleMeta program in programs) {
     futures.add(fetchBookings(program));
   }
   
-  List<Tuple2<String, List<Booking>>> tuples = await Future.wait(futures);
-  Map<String, List<Booking>> bookingMap = new Map();
+  List<Tuple2<ScheduleMeta, List<Booking>>> tuples = await Future.wait(futures);
+  Map<ScheduleMeta, List<Booking>> bookingMap = new Map();
 
-  for(Tuple2<String, List<Booking>> tuple in tuples) {
+  for(Tuple2<ScheduleMeta, List<Booking>> tuple in tuples) {
     bookingMap[tuple.item1] = tuple.item2;
   }
 
   return bookingMap;
 }
 
-Future<Tuple2<String, List<Booking>>> fetchBookings(String program) async {
+Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(ScheduleMeta program) async {
   var httpClient = createHttpClient();
-  String ical = await httpClient.read("https://kronox.mah.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sokMedAND=false&sprak=SV&resurser=p.${program}");
+  String ical = await httpClient.read(
+      "https://kronox.mah.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sokMedAND=false&sprak=SV&resurser=${program.type[0]}.${program.name}");
 
   List tokens = tokenizeCalendar(ical);
   CalendarObject root = parseCalendarObjects(tokens);
@@ -78,16 +80,16 @@ Future<Tuple2<String, List<Booking>>> fetchBookings(String program) async {
   return new Tuple2(program, bookings);
 }
 
-Map<String, List<Week>> buildWeeksStructureMap(Map<String, List<Booking>> bookingsMap) {
+Map<String, List<Week>> buildWeeksStructureMap(Map<ScheduleMeta, List<Booking>> bookingsMap) {
   Map<String, List<Week>> weekMap = new Map();
-  bookingsMap.forEach((key, value) => weekMap[key] = buildWeeksStructure(value));
+  bookingsMap.forEach((key, value) => weekMap[key.name] = buildWeeksStructure(value));
   return weekMap;
 }
 
 List<Week> buildWeeksStructure(List<Booking> bookings) {
   List<Week> weeks = <Week>[];
-  DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
-  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy");
+  //DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
+  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy", "sv");
 
   if(bookings.isNotEmpty) {
     // Sort bookings by DateTime
