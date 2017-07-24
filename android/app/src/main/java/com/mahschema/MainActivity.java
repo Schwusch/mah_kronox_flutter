@@ -1,4 +1,4 @@
-package mahschema.mahkronoxflutter;
+package com.mahschema;
 
 import android.os.Bundle;
 

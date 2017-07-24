@@ -1,5 +1,5 @@
-name: mah_kronox_flutter
 description: Keeps track of your studies
+name: mahschema
 
 dependencies:
   tuple: "^1.0.1"
