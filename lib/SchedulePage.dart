@@ -8,6 +8,7 @@ import 'utils/fetchBookings.dart';
 import 'utils/Booking.dart';
 import 'utils/Week.dart';
 import 'utils/Day.dart';
+import 'utils/ScheduleMeta.dart';
 
 import 'redux/store.dart';
 import 'redux/actions.dart';
@@ -208,18 +209,43 @@ class _SchedulePageState extends State<SchedulePage> {
 
   @override
   Widget build(BuildContext context) {
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+
     return new Scaffold(
         key: _scaffoldKey,
         appBar: new AppBar(
             title: new Text(
-                scheduleStore.state.currentSchedule?.givenName ?? widget.title),
-            actions: scheduleStore.state.currentSchedule != null
+                currentSchedule?.givenName ?? widget.title),
+            actions: currentSchedule != null
                 ? <Widget>[
                     new IconButton(
                         icon: const Icon(Icons.refresh),
                         tooltip: 'Refresh',
                         onPressed: () {
                           _refreshIndicatorKey.currentState?.show();
+                        }),
+                    new IconButton(
+                        icon: const Icon(Icons.info),
+                        tooltip: 'Information',
+                        onPressed: () {
+                          showDialog(context: context, child: new SimpleDialog(
+                            title: new Text(currentSchedule.givenName),
+                            children: <Widget>[
+                              new ListTile(
+                                title: new Text(currentSchedule.name),
+                                subtitle: new Text(currentSchedule.description),
+                              ),
+                              new ButtonTheme.bar(
+                                child: new ButtonBar(
+                                  children: <Widget>[
+                                    new FlatButton(
+                                        child: const Text('OK'),
+                                        onPressed: () => Navigator.of(context).pop())
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ));
                         })
                   ]
                 : null),
