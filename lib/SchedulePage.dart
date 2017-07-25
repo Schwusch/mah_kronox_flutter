@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'Drawer.dart';
+import 'FullScreenBooking.dart';
 
 import 'utils/fetchBookings.dart';
 import 'utils/Booking.dart';
@@ -42,8 +43,8 @@ class _SchedulePageState extends State<SchedulePage> {
     if (scheduleStore.state.currentSchedule != null) {
       fetchAllSchedules(scheduleStore.state.schedules).then((weeks) {
         completer.complete(null);
-        scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-            weeks: weeks));
+        scheduleStore
+            .dispatch(new SetWeeksForCurrentScheduleAction(weeks: weeks));
       });
     } else {
       completer.complete(null);
@@ -106,7 +107,13 @@ class _SchedulePageState extends State<SchedulePage> {
 
     return new Card(
         elevation: 3.0,
-        child: new Container(
+        child: new InkWell(
+          onLongPress: () {
+            Navigator.push(context, new MaterialPageRoute(
+              builder: (BuildContext context) => new FullScreenBooking(booking: booking),
+              fullscreenDialog: true,
+            ));
+          },
           child: new Row(
             children: <Widget>[
               new Container(
@@ -214,8 +221,7 @@ class _SchedulePageState extends State<SchedulePage> {
     return new Scaffold(
         key: _scaffoldKey,
         appBar: new AppBar(
-            title: new Text(
-                currentSchedule?.givenName ?? widget.title),
+            title: new Text(currentSchedule?.givenName ?? widget.title),
             actions: currentSchedule != null
                 ? <Widget>[
                     new IconButton(
@@ -228,24 +234,28 @@ class _SchedulePageState extends State<SchedulePage> {
                         icon: const Icon(Icons.info),
                         tooltip: 'Information',
                         onPressed: () {
-                          showDialog(context: context, child: new SimpleDialog(
-                            title: new Text(currentSchedule.givenName),
-                            children: <Widget>[
-                              new ListTile(
-                                title: new Text(currentSchedule.name),
-                                subtitle: new Text(currentSchedule.description),
-                              ),
-                              new ButtonTheme.bar(
-                                child: new ButtonBar(
-                                  children: <Widget>[
-                                    new FlatButton(
-                                        child: const Text('OK'),
-                                        onPressed: () => Navigator.of(context).pop())
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ));
+                          showDialog(
+                              context: context,
+                              child: new SimpleDialog(
+                                title: new Text(currentSchedule.givenName),
+                                children: <Widget>[
+                                  new ListTile(
+                                    title: new Text(currentSchedule.name),
+                                    subtitle:
+                                        new Text(currentSchedule.description),
+                                  ),
+                                  new ButtonTheme.bar(
+                                    child: new ButtonBar(
+                                      children: <Widget>[
+                                        new FlatButton(
+                                            child: const Text('OK'),
+                                            onPressed: () =>
+                                                Navigator.of(context).pop())
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ));
                         })
                   ]
                 : null),

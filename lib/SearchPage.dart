@@ -226,8 +226,10 @@ class _SearchPageState extends State<SearchPage> {
         children: <Widget>[
           new ListTile(
             leading: const Icon(Icons.schedule),
-            title: new Text(result["value"]),
+            title: new Text(name),
             subtitle: new Text(description),
+            isThreeLine: true,
+            dense: true,
           ),
           new ButtonTheme.bar(
             child: new ButtonBar(
