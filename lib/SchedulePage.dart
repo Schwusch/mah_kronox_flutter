@@ -39,10 +39,10 @@ class _SchedulePageState extends State<SchedulePage> {
   Future<Null> fetchAndSetBookings() {
     final Completer<Null> completer = new Completer<Null>();
     if (scheduleStore.state.currentSchedule != null) {
-      fetchAllBookings(scheduleStore.state.schedules).then((bookings) {
+      fetchAllSchedules(scheduleStore.state.schedules).then((weeks) {
         completer.complete(null);
         scheduleStore.dispatch(new SetWeeksForCurrentScheduleAction(
-            weeks: buildWeeksStructureMap(bookings)));
+            weeks: weeks));
       });
     } else {
       completer.complete(null);
@@ -52,7 +52,7 @@ class _SchedulePageState extends State<SchedulePage> {
       _scaffoldKey.currentState?.showSnackBar(new SnackBar(
           content: const Text("Scheman uppdaterade"),
           action: new SnackBarAction(
-              label: 'RETRY',
+              label: 'IGEN',
               onPressed: () {
                 _refreshIndicatorKey.currentState.show();
               })));

@@ -31,7 +31,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         onTap: () => Navigator.of(context).pushNamed(SettingsPage.path),
       ),
       new Divider(),
-      new ListTile(title: new Text("Mina Sheman"), dense: true),
+      new ListTile(title: new Text("Mina Scheman"), dense: true),
       new ListTile(
         leading: new Icon(Icons.all_inclusive),
         title: new Text("Visa alla scheman"),

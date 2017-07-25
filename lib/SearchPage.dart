@@ -7,6 +7,7 @@ import 'package:flutter_stream_friends/flutter_stream_friends.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'utils/ScheduleMeta.dart';
+import 'utils/fetchBookings.dart';
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key, this.title}) : super(key: key);
@@ -179,13 +180,23 @@ class _SearchPageState extends State<SearchPage> {
               new FlatButton(
                   onPressed: () {
                     String givenName = controller.text;
+                    ScheduleMeta schedule = new ScheduleMeta(
+                        givenName: givenName,
+                        name: name,
+                        type: _selectedChoice.value,
+                        description: description);
 
-                    scheduleStore.dispatch(new AddScheduleAction(
-                        schedule: new ScheduleMeta(
-                            givenName: givenName,
-                            name: name,
-                            type: _selectedChoice.value,
-                            description: description)));
+                    scheduleStore
+                        .dispatch(new AddScheduleAction(schedule: schedule));
+
+                    scheduleStore.dispatch(
+                        new SetCurrentScheduleAction(schedule: schedule));
+
+                    fetchAllSchedules(scheduleStore.state.schedules)
+                        .then((weeks) {
+                      scheduleStore.dispatch(
+                          new SetWeeksForCurrentScheduleAction(weeks: weeks));
+                    });
 
                     Scaffold.of(context).showSnackBar(new SnackBar(
                           content: new Text("Lade till " + givenName),
