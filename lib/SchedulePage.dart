@@ -13,6 +13,7 @@ import 'utils/ScheduleMeta.dart';
 
 import 'redux/store.dart';
 import 'redux/actions.dart';
+import 'redux/app_state.dart';
 
 class SchedulePage extends StatefulWidget {
   final String title;
@@ -24,13 +25,14 @@ class SchedulePage extends StatefulWidget {
   _SchedulePageState createState() => new _SchedulePageState();
 }
 
-class _SchedulePageState extends State<SchedulePage> {
+class _SchedulePageState extends State<SchedulePage>
+    with TickerProviderStateMixin {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-  var _subscribtion;
-  List<Booking> bookings = [];
+  StreamSubscription<ScheduleState> _subscribtion;
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
+  TabController _tabController;
 
   _SchedulePageState() {
     if (scheduleStore.state.schedules.isNotEmpty) {
@@ -61,18 +63,36 @@ class _SchedulePageState extends State<SchedulePage> {
     });
   }
 
+  _updateState() {
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule?.name];
+
+    this._tabController = new TabController(
+        vsync: this, length: weeksToDisplay?.length ?? 0, initialIndex: 0);
+  }
+
+  _onStoreChange(_) {
+    setState(_updateState);
+  }
+
   @override
   void initState() {
     super.initState();
-    _subscribtion = scheduleStore.onChange.listen((_) {
-      setState(() {});
-    });
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule?.name];
+
+    _tabController =
+        new TabController(vsync: this, length: weeksToDisplay?.length ?? 0);
+    _subscribtion = scheduleStore.onChange.listen(_onStoreChange);
   }
 
   @override
   void dispose() {
     super.dispose();
     _subscribtion.cancel();
+    _tabController.dispose();
   }
 
   Widget _createScheduleItem(Booking booking) {
@@ -172,78 +192,100 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
+  List<Widget> buildAppBarActions() {
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+
+    return <Widget>[
+      new IconButton(
+          icon: const Icon(Icons.refresh),
+          tooltip: 'Refresh',
+          onPressed: () {
+            _refreshIndicatorKey.currentState?.show();
+          }),
+      new IconButton(
+          icon: const Icon(Icons.info),
+          tooltip: 'Information',
+          onPressed: () {
+            showDialog(
+                context: context,
+                child: new SimpleDialog(
+                  title: new Text(currentSchedule?.givenName),
+                  children: <Widget>[
+                    new ListTile(
+                      title: new Text(currentSchedule.name),
+                      subtitle: new Text(currentSchedule.description),
+                    ),
+                    new ButtonTheme.bar(
+                      child: new ButtonBar(
+                        children: <Widget>[
+                          new FlatButton(
+                              child: const Text('OK'),
+                              onPressed: () => Navigator.of(context).pop())
+                        ],
+                      ),
+                    ),
+                  ],
+                ));
+          })
+    ];
+  }
+
+  List<Widget> buildSliverHeader(
+      BuildContext context, bool innerBoxIsScrolled) {
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule.name];
+
+    TabBar tabBar = new TabBar(
+      controller: this._tabController,
+      tabs: weeksToDisplay
+          ?.map((Week week) => new Tab(text: "v. ${week.number}"))
+          ?.toList(),
+      isScrollable: true,
+    );
+
+    return <Widget>[
+      new SliverAppBar(
+          title: new Text(currentSchedule?.givenName ?? widget.title),
+          pinned: true,
+          forceElevated: innerBoxIsScrolled,
+          bottom: tabBar,
+          actions: buildAppBarActions()),
+    ];
+  }
+
   Widget buildTabbedBody() {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
 
-    return new DefaultTabController(
-      length: weeksToDisplay.length,
-      initialIndex: 0,
-      child: new Scaffold(
+      return new Scaffold(
         drawer: new ScheduleDrawer(),
         key: _scaffoldKey,
         body: new NestedScrollView(
-            headerSliverBuilder:
-                (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                new SliverAppBar(
-                    title: new Text(currentSchedule?.givenName ?? widget.title),
-                    pinned: true,
-                    forceElevated: innerBoxIsScrolled,
-                    bottom: new TabBar(
-                      tabs: weeksToDisplay
-                          ?.map(
-                              (Week week) => new Tab(text: "v. ${week.number}"))
-                          ?.toList(),
-                      isScrollable: true,
-                    ),
-                    actions: <Widget>[
-                      new IconButton(
-                          icon: const Icon(Icons.refresh),
-                          tooltip: 'Refresh',
-                          onPressed: () {
-                            _refreshIndicatorKey.currentState?.show();
-                          }),
-                      new IconButton(
-                          icon: const Icon(Icons.info),
-                          tooltip: 'Information',
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                child: new SimpleDialog(
-                                  title: new Text(currentSchedule?.givenName),
-                                  children: <Widget>[
-                                    new ListTile(
-                                      title: new Text(currentSchedule.name),
-                                      subtitle:
-                                          new Text(currentSchedule.description),
-                                    ),
-                                    new ButtonTheme.bar(
-                                      child: new ButtonBar(
-                                        children: <Widget>[
-                                          new FlatButton(
-                                              child: const Text('OK'),
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop())
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ));
-                          })
-                    ]),
-              ];
-            },
+            headerSliverBuilder: buildSliverHeader,
             body: new RefreshIndicator(
                 onRefresh: fetchAndSetBookings,
                 key: _refreshIndicatorKey,
                 child: new TabBarView(
+                    controller: this._tabController,
                     children: weeksToDisplay.map((Week week) {
-                  return new ListView(
-                      children:
-                          week.days.map((day) => _createDayCard(day)).toList());
-                })?.toList()))),
+                      return new ListView(
+                          children: week.days
+                              .map((day) => _createDayCard(day))
+                              .toList());
+                    })?.toList()))),
+      );
+  }
+
+  Widget buildBodyWithoutWeeks() {
+    return new Scaffold(
+      drawer: new ScheduleDrawer(),
+      body: new Center(child: new Text("Inga lektioner hittade. Prova att ladda om.")),
+      appBar: new AppBar(
+        title: new Text(scheduleStore.state.currentSchedule?.givenName ??
+            scheduleStore.state.currentSchedule?.name),
+        actions: buildAppBarActions(),
       ),
     );
   }
@@ -263,13 +305,12 @@ class _SchedulePageState extends State<SchedulePage> {
   Widget build(BuildContext context) {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
-        scheduleStore.state.weeksMap[currentSchedule?.name];
+    scheduleStore.state.weeksMap[currentSchedule?.name];
 
     if (currentSchedule == null) {
       return buildEmptyBody("Inget schema valt");
-    } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
-      return buildEmptyBody(
-          "Det finns inga lektioner för ${currentSchedule.givenName}");
+    } else if(weeksToDisplay == null || weeksToDisplay.isEmpty){
+      return buildBodyWithoutWeeks();
     } else {
       return buildTabbedBody();
     }

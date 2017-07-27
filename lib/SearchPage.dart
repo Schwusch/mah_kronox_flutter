@@ -27,6 +27,8 @@ class _SearchPageState extends State<SearchPage> {
   Choice _selectedChoice = choices[0]; // The app's "state".
   StreamSubscription searchStream;
   bool loading = false;
+  bool error = false;
+  String errorMessage;
   var _subscribtion;
 
   @override
@@ -42,10 +44,11 @@ class _SearchPageState extends State<SearchPage> {
         // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
         .distinct((String prev, String next) => prev == next)
         // Use debounce() to prevent calling the server on fast following keystrokes
-        .debounce(const Duration(milliseconds: 250))
+        .debounce(const Duration(milliseconds: 350))
         .doOnEach((var _) {
           setState(() {
             loading = false;
+            error = false;
             searchResults.clear();
           });
         })
@@ -56,6 +59,7 @@ class _SearchPageState extends State<SearchPage> {
           });
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
+        .timeout(new Duration(seconds: 15))
         .listen((List<Map> latestResult) {
           setState(() {
             loading = false;
@@ -66,6 +70,13 @@ class _SearchPageState extends State<SearchPage> {
         }, onError: (dynamic e) {
           debugPrint("ERROR: ${e.toString()}");
           setState(() {
+            if(e.runtimeType == TimeoutException) {
+              errorMessage = "Sökningen tog väldigt lång tid. Försök igen.";
+            } else {
+              errorMessage = e.toString();
+            }
+
+            error = true;
             loading = false;
             searchResults.clear();
           });
@@ -105,7 +116,9 @@ class _SearchPageState extends State<SearchPage> {
             ),
             body: loading
                 ? new Center(child: new CircularProgressIndicator())
-                : buildResults()));
+                : error
+                    ? new Center(child: new Text(errorMessage))
+                    : buildResults()));
   }
 
   Widget buildSearch() {
