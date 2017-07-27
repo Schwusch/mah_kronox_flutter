@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:rxdart/rxdart.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_stream_friends/flutter_stream_friends.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'utils/ScheduleMeta.dart';
 import 'utils/fetchBookings.dart';
+import 'package:http/http.dart' as http;
 
 class SearchPage extends StatefulWidget {
   SearchPage({Key key, this.title}) : super(key: key);
@@ -59,7 +59,6 @@ class _SearchPageState extends State<SearchPage> {
           });
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
-        .timeout(new Duration(seconds: 15))
         .listen((List<Map> latestResult) {
           setState(() {
             loading = false;
@@ -91,8 +90,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
-    var httpClient = createHttpClient();
-    return new Observable<String>.fromFuture(httpClient.read(
+    return new Observable<String>.fromFuture(http.read(
             "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}"))
         .map((String response) => JSON.decode(response));
   }

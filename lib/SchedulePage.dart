@@ -47,6 +47,8 @@ class _SchedulePageState extends State<SchedulePage>
         completer.complete(null);
         scheduleStore
             .dispatch(new SetWeeksForCurrentScheduleAction(weeks: weeks));
+      }).catchError((Error e) {
+        completer.completeError(e);
       });
     } else {
       completer.complete(null);
@@ -58,7 +60,15 @@ class _SchedulePageState extends State<SchedulePage>
           action: new SnackBarAction(
               label: 'IGEN',
               onPressed: () {
-                _refreshIndicatorKey.currentState.show();
+                _refreshIndicatorKey.currentState?.show();
+              })));
+    }).catchError(() {
+      _scaffoldKey.currentState?.showSnackBar(new SnackBar(
+          content: const Text("Ett fel inträffade vid hämtning av schema"),
+          action: new SnackBarAction(
+              label: 'IGEN',
+              onPressed: () {
+                _refreshIndicatorKey.currentState?.show();
               })));
     });
   }
@@ -259,29 +269,30 @@ class _SchedulePageState extends State<SchedulePage>
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
 
-      return new Scaffold(
-        drawer: new ScheduleDrawer(),
-        key: _scaffoldKey,
-        body: new NestedScrollView(
-            headerSliverBuilder: buildSliverHeader,
-            body: new RefreshIndicator(
-                onRefresh: fetchAndSetBookings,
-                key: _refreshIndicatorKey,
-                child: new TabBarView(
-                    controller: this._tabController,
-                    children: weeksToDisplay.map((Week week) {
-                      return new ListView(
-                          children: week.days
-                              .map((day) => _createDayCard(day))
-                              .toList());
-                    })?.toList()))),
-      );
+    return new Scaffold(
+      drawer: new ScheduleDrawer(),
+      key: _scaffoldKey,
+      body: new NestedScrollView(
+          headerSliverBuilder: buildSliverHeader,
+          body: new RefreshIndicator(
+              onRefresh: fetchAndSetBookings,
+              key: _refreshIndicatorKey,
+              child: new TabBarView(
+                  controller: this._tabController,
+                  children: weeksToDisplay.map((Week week) {
+                    return new ListView(
+                        children: week.days
+                            .map((day) => _createDayCard(day))
+                            .toList());
+                  })?.toList()))),
+    );
   }
 
   Widget buildBodyWithoutWeeks() {
     return new Scaffold(
       drawer: new ScheduleDrawer(),
-      body: new Center(child: new Text("Inga lektioner hittade. Prova att ladda om.")),
+      body: new Center(
+          child: new Text("Inga lektioner hittade. Prova att ladda om.")),
       appBar: new AppBar(
         title: new Text(scheduleStore.state.currentSchedule?.givenName ??
             scheduleStore.state.currentSchedule?.name),
@@ -305,11 +316,11 @@ class _SchedulePageState extends State<SchedulePage>
   Widget build(BuildContext context) {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
-    scheduleStore.state.weeksMap[currentSchedule?.name];
+        scheduleStore.state.weeksMap[currentSchedule?.name];
 
     if (currentSchedule == null) {
       return buildEmptyBody("Inget schema valt");
-    } else if(weeksToDisplay == null || weeksToDisplay.isEmpty){
+    } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
       return buildBodyWithoutWeeks();
     } else {
       return buildTabbedBody();
