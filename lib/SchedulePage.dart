@@ -109,10 +109,13 @@ class _SchedulePageState extends State<SchedulePage> {
         elevation: 3.0,
         child: new InkWell(
           onLongPress: () {
-            Navigator.push(context, new MaterialPageRoute(
-              builder: (BuildContext context) => new FullScreenBooking(booking: booking),
-              fullscreenDialog: true,
-            ));
+            Navigator.push(
+                context,
+                new MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      new FullScreenBooking(booking: booking),
+                  fullscreenDialog: true,
+                ));
           },
           child: new Row(
             children: <Widget>[
@@ -169,100 +172,106 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  Widget _createWeekCard(Week week) {
-    List<Widget> widgets = [];
-    widgets.add(new Card(
-      color: themeStore.state.theme.primaryColor,
-      elevation: 5.0,
-      child: new Text("v.${week.number}",
-          textScaleFactor: 2.0,
-          textAlign: TextAlign.center,
-          style: themeStore.state.theme.primaryTextTheme.body1),
-    ));
+  Widget buildTabbedBody() {
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule.name];
 
-    widgets.addAll(week.days.map((day) => _createDayCard(day)));
-
-    return new Card(
-      child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch, children: widgets),
-      color: themeStore.state.brightness == Brightness.light
-          ? themeStore.state.primaryColor.shade50
-          : themeStore.state.theme.canvasColor,
+    return new DefaultTabController(
+      length: weeksToDisplay.length,
+      initialIndex: 0,
+      child: new Scaffold(
+        drawer: new ScheduleDrawer(),
+        key: _scaffoldKey,
+        body: new NestedScrollView(
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                new SliverAppBar(
+                    title: new Text(currentSchedule?.givenName ?? widget.title),
+                    pinned: true,
+                    forceElevated: innerBoxIsScrolled,
+                    bottom: new TabBar(
+                      tabs: weeksToDisplay
+                          ?.map(
+                              (Week week) => new Tab(text: "v. ${week.number}"))
+                          ?.toList(),
+                      isScrollable: true,
+                    ),
+                    actions: <Widget>[
+                      new IconButton(
+                          icon: const Icon(Icons.refresh),
+                          tooltip: 'Refresh',
+                          onPressed: () {
+                            _refreshIndicatorKey.currentState?.show();
+                          }),
+                      new IconButton(
+                          icon: const Icon(Icons.info),
+                          tooltip: 'Information',
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                child: new SimpleDialog(
+                                  title: new Text(currentSchedule?.givenName),
+                                  children: <Widget>[
+                                    new ListTile(
+                                      title: new Text(currentSchedule.name),
+                                      subtitle:
+                                          new Text(currentSchedule.description),
+                                    ),
+                                    new ButtonTheme.bar(
+                                      child: new ButtonBar(
+                                        children: <Widget>[
+                                          new FlatButton(
+                                              child: const Text('OK'),
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop())
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ));
+                          })
+                    ]),
+              ];
+            },
+            body: new RefreshIndicator(
+                onRefresh: fetchAndSetBookings,
+                key: _refreshIndicatorKey,
+                child: new TabBarView(
+                    children: weeksToDisplay.map((Week week) {
+                  return new ListView(
+                      children:
+                          week.days.map((day) => _createDayCard(day)).toList());
+                })?.toList()))),
+      ),
     );
   }
 
-  List<Widget> _buildSchedule() {
-    return scheduleStore
-        .state.weeksMap[scheduleStore.state.currentSchedule?.name]
-        .map((week) => _createWeekCard(week))
-        .toList(growable: false);
-  }
-
-  Widget buildBody() {
-    if (scheduleStore
-            .state.weeksMap[scheduleStore.state.currentSchedule?.name] !=
-        null) {
-      return new ListView(
-        padding: new EdgeInsets.all(5.0),
-        reverse: false,
-        children: _buildSchedule(),
-      );
-    }
-
-    return new Center(
-      child: new Text("Inget schema valt"),
+  Widget buildEmptyBody(String message) {
+    return new Scaffold(
+      drawer: new ScheduleDrawer(),
+      body: new Center(child: new Text(message)),
+      appBar: new AppBar(
+        title: new Text(scheduleStore.state.currentSchedule?.givenName ??
+            "Inget schema valt"),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule?.name];
 
-    return new Scaffold(
-        key: _scaffoldKey,
-        appBar: new AppBar(
-            title: new Text(currentSchedule?.givenName ?? widget.title),
-            actions: currentSchedule != null
-                ? <Widget>[
-                    new IconButton(
-                        icon: const Icon(Icons.refresh),
-                        tooltip: 'Refresh',
-                        onPressed: () {
-                          _refreshIndicatorKey.currentState?.show();
-                        }),
-                    new IconButton(
-                        icon: const Icon(Icons.info),
-                        tooltip: 'Information',
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              child: new SimpleDialog(
-                                title: new Text(currentSchedule.givenName),
-                                children: <Widget>[
-                                  new ListTile(
-                                    title: new Text(currentSchedule.name),
-                                    subtitle:
-                                        new Text(currentSchedule.description),
-                                  ),
-                                  new ButtonTheme.bar(
-                                    child: new ButtonBar(
-                                      children: <Widget>[
-                                        new FlatButton(
-                                            child: const Text('OK'),
-                                            onPressed: () =>
-                                                Navigator.of(context).pop())
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ));
-                        })
-                  ]
-                : null),
-        body: new RefreshIndicator(
-            key: _refreshIndicatorKey,
-            onRefresh: fetchAndSetBookings,
-            child: buildBody()),
-        drawer: new ScheduleDrawer());
+    if (currentSchedule == null) {
+      return buildEmptyBody("Inget schema valt");
+    } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
+      return buildEmptyBody(
+          "Det finns inga lektioner för ${currentSchedule.givenName}");
+    } else {
+      return buildTabbedBody();
+    }
   }
 }
