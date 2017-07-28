@@ -83,7 +83,9 @@ class _SchedulePageState extends State<SchedulePage>
   }
 
   _onStoreChange(_) {
-    setState(_updateState);
+    if(mounted) {
+      setState(_updateState);
+    }
   }
 
   @override

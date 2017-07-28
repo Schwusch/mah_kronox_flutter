@@ -104,7 +104,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
   void initState() {
     super.initState();
     _subscription = scheduleStore.onChange.listen((_) {
-      setState(() {});
+      if(mounted) setState(() {});
     });
   }
 

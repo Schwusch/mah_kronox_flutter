@@ -46,39 +46,47 @@ class _SearchPageState extends State<SearchPage> {
         // Use debounce() to prevent calling the server on fast following keystrokes
         .debounce(const Duration(milliseconds: 350))
         .doOnEach((var _) {
-          setState(() {
-            loading = false;
-            error = false;
-            searchResults.clear();
-          });
+          if (mounted) {
+            setState(() {
+              loading = false;
+              error = false;
+              searchResults.clear();
+            });
+          }
         })
         .where((String str) => str.isNotEmpty)
         .doOnEach((var _) {
-          setState(() {
-            loading = true;
-          });
+          if (mounted) {
+            setState(() {
+              loading = true;
+            });
+          }
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
         .listen((List<Map> latestResult) {
-          setState(() {
-            loading = false;
-            if (latestResult.isNotEmpty) {
-              searchResults.addAll(latestResult);
-            }
-          });
+          if (mounted) {
+            setState(() {
+              loading = false;
+              if (latestResult.isNotEmpty) {
+                searchResults.addAll(latestResult);
+              }
+            });
+          }
         }, onError: (dynamic e) {
           debugPrint("ERROR: ${e.toString()}");
-          setState(() {
-            if(e.runtimeType == TimeoutException) {
-              errorMessage = "Sökningen tog väldigt lång tid. Försök igen.";
-            } else {
-              errorMessage = e.toString();
-            }
+          if (mounted) {
+            setState(() {
+              if (e.runtimeType == TimeoutException) {
+                errorMessage = "Sökningen tog väldigt lång tid. Försök igen.";
+              } else {
+                errorMessage = e.toString();
+              }
 
-            error = true;
-            loading = false;
-            searchResults.clear();
-          });
+              error = true;
+              loading = false;
+              searchResults.clear();
+            });
+          }
         }, cancelOnError: false);
   }
 
@@ -96,12 +104,14 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _select(Choice choice) {
-    setState(() {
-      // Causes the app to rebuild with the new _selectedChoice.
-      _textController.clear();
-      searchResults.clear();
-      _selectedChoice = choice;
-    });
+    if (mounted) {
+      setState(() {
+        // Causes the app to rebuild with the new _selectedChoice.
+        _textController.clear();
+        searchResults.clear();
+        _selectedChoice = choice;
+      });
+    }
   }
 
   @override
