@@ -83,7 +83,7 @@ class _SchedulePageState extends State<SchedulePage>
   }
 
   _onStoreChange(_) {
-    if(mounted) {
+    if (mounted) {
       setState(_updateState);
     }
   }
@@ -182,18 +182,24 @@ class _SchedulePageState extends State<SchedulePage>
   Widget _createDayCard(Day day) {
     return new Column(
       children: <Widget>[
-        new Row(
-          children: <Widget>[
-            new Padding(
-                padding:
-                    new EdgeInsets.symmetric(vertical: 2.0, horizontal: 10.0),
-                child: new Text(
+        new Padding(
+            padding: new EdgeInsets.symmetric(vertical: 2.0, horizontal: 10.0),
+            child: new Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                new Text(
+                  day.weekday,
+                  textAlign: TextAlign.left,
+                  style: new TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0),
+                ),
+                new Text(
                   day.date,
-                  textAlign: TextAlign.center,
-                  style: new TextStyle(fontWeight: FontWeight.w500),
-                )),
-          ],
-        ),
+                  textAlign: TextAlign.right,
+                  style: new TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0),
+                ),
+              ],
+            )),
         new Padding(
             padding: new EdgeInsets.all(5.0),
             child: new Column(
@@ -242,52 +248,36 @@ class _SchedulePageState extends State<SchedulePage>
     ];
   }
 
-  List<Widget> buildSliverHeader(
-      BuildContext context, bool innerBoxIsScrolled) {
-    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
-    List<Week> weeksToDisplay =
-        scheduleStore.state.weeksMap[currentSchedule.name];
-
-    TabBar tabBar = new TabBar(
-      controller: this._tabController,
-      tabs: weeksToDisplay
-          ?.map((Week week) => new Tab(text: "v. ${week.number}"))
-          ?.toList(),
-      isScrollable: true,
-    );
-
-    return <Widget>[
-      new SliverAppBar(
-          title: new Text(currentSchedule?.givenName ?? widget.title),
-          pinned: true,
-          forceElevated: innerBoxIsScrolled,
-          bottom: tabBar,
-          actions: buildAppBarActions()),
-    ];
-  }
-
   Widget buildTabbedBody() {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
 
     return new Scaffold(
-      drawer: new ScheduleDrawer(),
-      key: _scaffoldKey,
-      body: new NestedScrollView(
-          headerSliverBuilder: buildSliverHeader,
-          body: new RefreshIndicator(
-              onRefresh: fetchAndSetBookings,
-              key: _refreshIndicatorKey,
-              child: new TabBarView(
-                  controller: this._tabController,
-                  children: weeksToDisplay.map((Week week) {
-                    return new ListView(
-                        children: week.days
-                            .map((day) => _createDayCard(day))
-                            .toList());
-                  })?.toList()))),
-    );
+        drawer: new ScheduleDrawer(),
+        key: _scaffoldKey,
+        appBar: new AppBar(
+          title: new Text(currentSchedule?.givenName ?? widget.title),
+          bottom: new TabBar(
+            controller: this._tabController,
+            tabs: weeksToDisplay
+                ?.map((Week week) => new Tab(text: "v. ${week.number}"))
+                ?.toList(),
+            isScrollable: true,
+          ),
+          actions: buildAppBarActions(),
+        ),
+        body: new RefreshIndicator(
+          onRefresh: fetchAndSetBookings,
+          key: _refreshIndicatorKey,
+          child: new TabBarView(
+              controller: this._tabController,
+              children: weeksToDisplay.map((Week week) {
+                return new ListView(
+                    children:
+                        week.days.map((day) => _createDayCard(day)).toList());
+              })?.toList()),
+        ));
   }
 
   Widget buildBodyWithoutWeeks() {

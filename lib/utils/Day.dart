@@ -3,15 +3,17 @@ import 'Booking.dart';
 class Day {
   List<Booking> bookings;
   String date;
+  String weekday;
 
-  Day({this.bookings, this.date});
+  Day({this.bookings, this.date, this.weekday});
 
   Map<String, dynamic> serialize() {
     return {
       "bookings": bookings
           .map((booking) => booking.serialize())
           .toList(growable: false),
-      "date": date
+      "date": date,
+      "weekday": weekday
     };
   }
 
@@ -20,6 +22,7 @@ class Day {
         bookings: day["bookings"]
             .map((booking) => Booking.deserialize(booking))
             .toList(),
-        date: day["date"]);
+        date: day["date"],
+        weekday: day["weekday"]);
   }
 }

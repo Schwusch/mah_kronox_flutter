@@ -146,7 +146,8 @@ Map<String, List<Week>> buildWeeksStructureMap(
 List<Week> buildWeeksStructure(List<Booking> bookings) {
   List<Week> weeks = <Week>[];
   //DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
-  DateFormat dateFormatter = new DateFormat("EEE, MMM d, ''yy", "sv");
+  DateFormat dateFormatter = new DateFormat("d MMM ''yy", "sv");
+  DateFormat weekdayFormatter = new DateFormat("EEEE", "sv");
 
   if (bookings.isNotEmpty) {
     // Sort bookings by DateTime
@@ -156,7 +157,8 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
 
     Day day = new Day(
         bookings: <Booking>[lastBooking],
-        date: dateFormatter.format(lastBooking.start));
+        date: dateFormatter.format(lastBooking.start),
+        weekday: weekdayFormatter.format(lastBooking.start));
 
     Week week =
         new Week(days: <Day>[day], number: weekOfYear(lastBooking.start));
@@ -167,7 +169,8 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
       if (weekOfYear(booking.start) != week.number) {
         day = new Day(
             bookings: <Booking>[booking],
-            date: dateFormatter.format(booking.start));
+            date: dateFormatter.format(booking.start),
+            weekday: weekdayFormatter.format(booking.start));
 
         week = new Week(days: <Day>[day], number: weekOfYear(booking.start));
 
@@ -176,7 +179,9 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
           lastBooking.start.month != booking.start.month) {
         day = new Day(
             bookings: <Booking>[booking],
-            date: dateFormatter.format(booking.start));
+            date: dateFormatter.format(booking.start),
+            weekday: weekdayFormatter.format(booking.start));
+
         week.days.add(day);
       } else if (lastBooking.uuid != booking.uuid) {
         day.bookings.add(booking);

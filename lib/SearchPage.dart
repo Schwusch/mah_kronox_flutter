@@ -210,14 +210,6 @@ class _SearchPageState extends State<SearchPage> {
                     scheduleStore
                         .dispatch(new AddScheduleAction(schedule: schedule));
 
-                    scheduleStore.dispatch(
-                        new SetCurrentScheduleAction(schedule: schedule));
-
-                    fetchAllSchedules(scheduleStore.state.schedules)
-                        .then((weeks) {
-                      scheduleStore.dispatch(
-                          new SetWeeksForCurrentScheduleAction(weeks: weeks));
-                    });
 
                     Scaffold.of(context).showSnackBar(new SnackBar(
                           content: new Text("Lade till " + givenName),
