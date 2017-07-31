@@ -32,23 +32,25 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
       ),
       new Divider(),
       new ListTile(title: new Text("Mina Scheman"), dense: true),
-      new ListTile(
+    ];
+
+    if(scheduleStore.state.schedules.length > 1) {
+      children.add(new ListTile(
         leading: new Icon(Icons.all_inclusive),
         title: new Text("Visa alla scheman"),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(
               schedule: new ScheduleMeta(
-            givenName: "Alla mina scheman",
-            name: "all",
-            description: "Alla mina scheman",
-          )));
+                givenName: "Alla mina scheman",
+                name: "all",
+                description: "Alla mina scheman",
+              )));
 
           refreshAllSchedules();
           Navigator.of(context).pop();
         },
-      ),
-    ];
-
+      ));
+    }
     children.addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
       return new ListTile(
         leading: new Icon(Icons.schedule),

@@ -177,7 +177,7 @@ class _SchedulePageState extends State<SchedulePage>
     return new Column(
       children: <Widget>[
         new Padding(
-            padding: new EdgeInsets.symmetric(vertical: 2.0, horizontal: 10.0),
+            padding: new EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
             child: new Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -282,22 +282,15 @@ class _SchedulePageState extends State<SchedulePage>
     return new Scaffold(
       drawer: new ScheduleDrawer(),
       body: new RefreshIndicator(
-        onRefresh: fetchAndSetBookings,
-        key: _refreshIndicatorKey,
-        child: new Center(
-          child: new Column(
-            children: <Widget>[
-              new Text("Inga lektioner hittade. Prova att ladda om."),
-              new RaisedButton(
-                onPressed: () {
-                  _refreshIndicatorKey.currentState?.show();
-                },
-                child: new Text("Ladda om"),
-              )
-            ],
-          ),
-        ),
-      ),
+          onRefresh: fetchAndSetBookings,
+          key: _refreshIndicatorKey,
+          child: new Center(
+              child: new RaisedButton(
+            onPressed: () {
+              _refreshIndicatorKey.currentState?.show();
+            },
+            child: new Icon(Icons.refresh),
+          ))),
       appBar: new AppBar(
         title: new Text(scheduleStore.state.currentSchedule?.givenName ??
             scheduleStore.state.currentSchedule?.name ??
@@ -312,8 +305,7 @@ class _SchedulePageState extends State<SchedulePage>
       drawer: new ScheduleDrawer(),
       body: new Center(child: new Text(message)),
       appBar: new AppBar(
-        title: new Text(scheduleStore.state.currentSchedule?.givenName ??
-            "Inget schema valt"),
+        title: new Text("Inget schema valt"),
       ),
     );
   }
@@ -324,7 +316,7 @@ class _SchedulePageState extends State<SchedulePage>
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule?.name];
 
-    if (currentSchedule == null) {
+    if (currentSchedule == null || scheduleStore.state.schedules.isEmpty) {
       return buildEmptyBody("Inget schema valt");
     } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
       return buildBodyWithoutWeeks();
