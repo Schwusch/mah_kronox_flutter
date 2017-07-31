@@ -56,7 +56,6 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
         onTap: () {
           scheduleStore
               .dispatch(new SetCurrentScheduleAction(schedule: schedule));
-          refreshAllSchedules();
           Navigator.of(context).pop();
         },
         onLongPress: () {

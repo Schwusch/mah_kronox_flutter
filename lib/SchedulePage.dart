@@ -34,12 +34,6 @@ class _SchedulePageState extends State<SchedulePage>
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   TabController _tabController;
 
-  _SchedulePageState() {
-    if (scheduleStore.state.schedules.isNotEmpty) {
-      fetchAndSetBookings();
-    }
-  }
-
   Future<Null> fetchAndSetBookings() {
     final Completer<Null> completer = new Completer<Null>();
     if (scheduleStore.state.currentSchedule != null) {
@@ -191,12 +185,14 @@ class _SchedulePageState extends State<SchedulePage>
                 new Text(
                   day.weekday,
                   textAlign: TextAlign.left,
-                  style: new TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0),
+                  style: new TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: 20.0),
                 ),
                 new Text(
                   day.date,
                   textAlign: TextAlign.right,
-                  style: new TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0),
+                  style: new TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: 20.0),
                 ),
               ],
             )),
@@ -253,6 +249,8 @@ class _SchedulePageState extends State<SchedulePage>
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
 
+    Widget body;
+
     return new Scaffold(
         drawer: new ScheduleDrawer(),
         key: _scaffoldKey,
@@ -283,11 +281,27 @@ class _SchedulePageState extends State<SchedulePage>
   Widget buildBodyWithoutWeeks() {
     return new Scaffold(
       drawer: new ScheduleDrawer(),
-      body: new Center(
-          child: new Text("Inga lektioner hittade. Prova att ladda om.")),
+      body: new RefreshIndicator(
+        onRefresh: fetchAndSetBookings,
+        key: _refreshIndicatorKey,
+        child: new Center(
+          child: new Column(
+            children: <Widget>[
+              new Text("Inga lektioner hittade. Prova att ladda om."),
+              new RaisedButton(
+                onPressed: () {
+                  _refreshIndicatorKey.currentState?.show();
+                },
+                child: new Text("Ladda om"),
+              )
+            ],
+          ),
+        ),
+      ),
       appBar: new AppBar(
         title: new Text(scheduleStore.state.currentSchedule?.givenName ??
-            scheduleStore.state.currentSchedule?.name),
+            scheduleStore.state.currentSchedule?.name ??
+            "Inget Schema valt"),
         actions: buildAppBarActions(),
       ),
     );
