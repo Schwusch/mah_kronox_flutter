@@ -89,7 +89,7 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(
   return new Tuple2(program, bookings);
 }
 
-getAllSignaturesFromBookings(List<Booking> bookings) async {
+Future<Null> getAllSignaturesFromBookings(List<Booking> bookings) async {
   Set<String> signatures = new Set<String>();
 
   for (Booking booking in bookings) {
@@ -136,16 +136,14 @@ Map<String, List<Week>> buildWeeksStructureMap(
     weekMap[key.name] = buildWeeksStructure(value);
   });
 
-  getAllSignaturesFromBookings(allBookings);
+  getAllSignaturesFromBookings(allBookings).catchError((var e) => print(e.toString()));
 
   weekMap["all"] = buildWeeksStructure(allBookings);
-
   return weekMap;
 }
 
 List<Week> buildWeeksStructure(List<Booking> bookings) {
   List<Week> weeks = <Week>[];
-  //DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   DateFormat dateFormatter = new DateFormat("d MMM ''yy", "sv");
   DateFormat weekdayFormatter = new DateFormat("EEEE", "sv");
 

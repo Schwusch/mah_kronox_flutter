@@ -7,6 +7,10 @@ import 'SettingsPage.dart';
 import 'SearchPage.dart';
 
 class ScheduleDrawer extends StatefulWidget {
+  final GlobalKey<RefreshIndicatorState> refreshIndicatorKey;
+
+  ScheduleDrawer({this.refreshIndicatorKey});
+
   @override
   State<StatefulWidget> createState() => new _ScheduleDrawerState();
 }
@@ -23,7 +27,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> children = <Widget>[
+    List<Widget> children = <Widget>[
       new ScheduleDrawerHeader(),
       new ListTile(
         leading: new Icon(Icons.settings),
@@ -34,54 +38,59 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
       new ListTile(title: new Text("Mina Scheman"), dense: true),
     ];
 
-    if(scheduleStore.state.schedules.length > 1) {
+    if (scheduleStore.state.schedules.length > 1) {
       children.add(new ListTile(
         leading: new Icon(Icons.all_inclusive),
         title: new Text("Visa alla scheman"),
         onTap: () {
           scheduleStore.dispatch(new SetCurrentScheduleAction(
               schedule: new ScheduleMeta(
-                givenName: "Alla mina scheman",
-                name: "all",
-                description: "Alla mina scheman",
-              )));
+            givenName: "Alla mina scheman",
+            name: "all",
+            description: "Alla mina scheman",
+          )));
 
-          refreshAllSchedules();
+          widget.refreshIndicatorKey?.currentState?.show();
           Navigator.of(context).pop();
         },
       ));
     }
-    children.addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
-      return new ListTile(
-        leading: new Icon(Icons.schedule),
-        title: new Text(schedule.givenName),
-        onTap: () {
-          scheduleStore
-              .dispatch(new SetCurrentScheduleAction(schedule: schedule));
-          Navigator.of(context).pop();
-        },
-        onLongPress: () {
-          showDialog(
-              context: context,
-              child: new AlertDialog(
-                title: new Text("Ta bort schema"),
-                content: new Text("Vill du ta bort ${schedule.givenName}?"),
-                actions: <Widget>[
-                  new FlatButton(
-                      onPressed: () {
-                        scheduleStore.dispatch(
-                            new RemoveScheduleAction(schedule: schedule.name));
-                        Navigator.of(context).pop();
-                      },
-                      child: new Text("Ta bort")),
-                  new FlatButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: new Text("Tillbaka"))
-                ],
-              ));
-        },
-      );
-    }));
+
+    if (scheduleStore.state.schedules.isNotEmpty) {
+      children
+          .addAll(scheduleStore.state.schedules.map((ScheduleMeta schedule) {
+        return new ListTile(
+          leading: new Icon(Icons.schedule),
+          title: new Text(schedule.givenName),
+          onTap: () {
+            scheduleStore
+                .dispatch(new SetCurrentScheduleAction(schedule: schedule));
+            widget.refreshIndicatorKey?.currentState?.show();
+            Navigator.of(context).pop();
+          },
+          onLongPress: () {
+            showDialog(
+                context: context,
+                child: new AlertDialog(
+                  title: new Text("Ta bort schema"),
+                  content: new Text("Vill du ta bort ${schedule.givenName}?"),
+                  actions: <Widget>[
+                    new FlatButton(
+                        onPressed: () {
+                          scheduleStore.dispatch(new RemoveScheduleAction(
+                              schedule: schedule.name));
+                          Navigator.of(context).pop();
+                        },
+                        child: new Text("Ta bort")),
+                    new FlatButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: new Text("Tillbaka"))
+                  ],
+                ));
+          },
+        );
+      }));
+    }
 
     children.addAll([
       new ListTile(
@@ -105,7 +114,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
   void initState() {
     super.initState();
     _subscription = scheduleStore.onChange.listen((_) {
-      if(mounted) setState(() {});
+      if (mounted) setState(() {});
     });
   }
 

@@ -6,7 +6,6 @@ import 'package:flutter_stream_friends/flutter_stream_friends.dart';
 import 'redux/store.dart';
 import 'redux/actions.dart';
 import 'utils/ScheduleMeta.dart';
-import 'utils/fetchBookings.dart';
 import 'package:http/http.dart' as http;
 
 class SearchPage extends StatefulWidget {
@@ -20,6 +19,7 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final ValueChangedStreamCallback<String> onTextChanged =
       new ValueChangedStreamCallback<String>();
   final List<Map> searchResults = <Map>[];
@@ -63,7 +63,7 @@ class _SearchPageState extends State<SearchPage> {
           }
         })
         .flatMapLatest((String value) => fetchAutoComplete(value))
-        .listen((List<Map> latestResult) {
+        .listen((List<Map<String, String>> latestResult) {
           if (mounted) {
             setState(() {
               loading = false;
@@ -106,7 +106,6 @@ class _SearchPageState extends State<SearchPage> {
   void _select(Choice choice) {
     if (mounted) {
       setState(() {
-        // Causes the app to rebuild with the new _selectedChoice.
         _textController.clear();
         searchResults.clear();
         _selectedChoice = choice;
@@ -119,6 +118,7 @@ class _SearchPageState extends State<SearchPage> {
     return new IconTheme(
         data: new IconThemeData(color: Theme.of(context).accentColor),
         child: new Scaffold(
+            key: _scaffoldKey,
             appBar: new AppBar(
               title: buildSearch(),
             ),
@@ -168,70 +168,34 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget buildResults() {
-    return new Builder(builder: (BuildContext context) {
-      return new Column(children: <Widget>[
-        new Flexible(
-            child: new ListView.builder(
-          padding: new EdgeInsets.all(8.0),
-          reverse: false,
-          itemBuilder: (_, index) =>
-              buildResultCard(searchResults[index], context),
-          itemCount: searchResults.length,
-        ))
-      ]);
-    });
-  }
-
-  Widget buildResultCard(Map result, BuildContext context) {
-    String name = result["value"];
-    String description =
-        result["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
-    TextEditingController controller = new TextEditingController(text: name);
-
-    Function onPressed = () {
-      showDialog(
-          context: context,
-          child: new AlertDialog(
-            title: new Text("Namnge ditt schema"),
-            content: new TextField(
-              autofocus: true,
-              controller: controller,
+    return new Column(children: <Widget>[
+      new Flexible(
+          child: new ListView.builder(
+        padding: new EdgeInsets.all(8.0),
+        reverse: false,
+        itemBuilder: (_, index) => new ResultCard(
+              data: searchResults[index],
+              choice: _selectedChoice,
+              scaffoldKey: _scaffoldKey,
             ),
-            actions: <Widget>[
-              new FlatButton(
-                  onPressed: () {
-                    String givenName = controller.text;
-                    ScheduleMeta schedule = new ScheduleMeta(
-                        givenName: givenName,
-                        name: name,
-                        type: _selectedChoice.value,
-                        description: description);
+        itemCount: searchResults.length,
+      ))
+    ]);
+  }
+}
 
-                    scheduleStore
-                        .dispatch(new AddScheduleAction(schedule: schedule));
+class ResultCard extends StatelessWidget {
+  final Map data;
+  final Choice choice;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
+  ResultCard({this.data, this.choice, this.scaffoldKey});
 
-                    Scaffold.of(context).showSnackBar(new SnackBar(
-                          content: new Text("Lade till " + givenName),
-                          action: new SnackBarAction(
-                              label: "Ångra",
-                              onPressed: () {
-                                scheduleStore.dispatch(
-                                    new RemoveScheduleAction(schedule: name));
-
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text(
-                                          "Ångrade tillägning av " + givenName),
-                                    ));
-                              }),
-                        ));
-
-                    Navigator.of(context).pop();
-                  },
-                  child: new Text("Lägg till")),
-            ],
-          ));
-    };
+  @override
+  Widget build(BuildContext context) {
+    String name = data["value"];
+    String description =
+        data["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
 
     return new Card(
       child: new Column(
@@ -252,12 +216,74 @@ class _SearchPageState extends State<SearchPage> {
                     onPressed: scheduleStore.state.schedules
                             .any((schedule) => schedule.name == name)
                         ? null
-                        : onPressed)
+                        : () => showDialog(
+                            context: context,
+                            child: new AddScheduleDialog(
+                              scheduleName: name,
+                              description: description,
+                              choice: choice,
+                              scaffoldKey: scaffoldKey,
+                            )))
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class AddScheduleDialog extends StatelessWidget {
+  final String scheduleName;
+  final String description;
+  final Choice choice;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
+  AddScheduleDialog(
+      {this.scheduleName, this.description, this.choice, this.scaffoldKey});
+
+  @override
+  Widget build(BuildContext context) {
+    TextEditingController controller =
+        new TextEditingController(text: scheduleName);
+
+    return new AlertDialog(
+      title: new Text("Namnge ditt schema"),
+      content: new TextField(
+        autofocus: true,
+        controller: controller,
+      ),
+      actions: <Widget>[
+        new FlatButton(
+            onPressed: () {
+              String givenName = controller.text;
+              ScheduleMeta schedule = new ScheduleMeta(
+                  givenName: givenName,
+                  name: scheduleName,
+                  type: choice.value,
+                  description: description);
+
+              scheduleStore.dispatch(new AddScheduleAction(schedule: schedule));
+
+              scaffoldKey?.currentState?.showSnackBar(new SnackBar(
+                    content: new Text("Lade till " + givenName),
+                    action: new SnackBarAction(
+                        label: "Ångra",
+                        onPressed: () {
+                          scheduleStore.dispatch(
+                              new RemoveScheduleAction(schedule: scheduleName));
+
+                          Scaffold.of(context).showSnackBar(new SnackBar(
+                                content: new Text(
+                                    "Ångrade tillägning av " + givenName),
+                              ));
+                        }),
+                  ));
+
+              Navigator.of(context).pop();
+            },
+            child: new Text("Lägg till")),
+      ],
     );
   }
 }

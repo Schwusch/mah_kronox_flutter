@@ -63,7 +63,9 @@ ScheduleState _removeScheduleAction(
     ScheduleState state, RemoveScheduleAction action) {
   ScheduleState newState = state.apply(
       schedules: state.schedules.toList()
-        ..removeWhere((schedule) => schedule.name == action.schedule));
+        ..removeWhere((schedule) => schedule.name == action.schedule),
+      weeksMap: state.weeksMap..remove(action.schedule),
+  );
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }

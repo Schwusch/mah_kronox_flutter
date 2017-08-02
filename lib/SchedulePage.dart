@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'SearchPage.dart';
 import 'Drawer.dart';
 import 'FullScreenBooking.dart';
 
@@ -41,7 +42,7 @@ class _SchedulePageState extends State<SchedulePage>
         completer.complete(null);
         scheduleStore
             .dispatch(new SetWeeksForCurrentScheduleAction(weeks: weeks));
-      }).catchError((Error e) {
+      }).catchError((var e) {
         completer.completeError(e);
       });
     } else {
@@ -50,17 +51,14 @@ class _SchedulePageState extends State<SchedulePage>
 
     return completer.future.then((_) {
       _scaffoldKey.currentState?.showSnackBar(new SnackBar(
-          content: const Text("Scheman uppdaterade"),
-          action: new SnackBarAction(
-              label: 'IGEN',
-              onPressed: () {
-                _refreshIndicatorKey.currentState?.show();
-              })));
-    }).catchError(() {
+        content: const Text("Scheman uppdaterade"),
+      ));
+    }).catchError((var e) {
+      print(e.toString());
       _scaffoldKey.currentState?.showSnackBar(new SnackBar(
           content: const Text("Ett fel inträffade vid hämtning av schema"),
           action: new SnackBarAction(
-              label: 'IGEN',
+              label: 'PROVA IGEN',
               onPressed: () {
                 _refreshIndicatorKey.currentState?.show();
               })));
@@ -228,6 +226,8 @@ class _SchedulePageState extends State<SchedulePage>
                     new ListTile(
                       title: new Text(currentSchedule.name),
                       subtitle: new Text(currentSchedule.description),
+                      isThreeLine: true,
+                      dense: true,
                     ),
                     new ButtonTheme.bar(
                       child: new ButtonBar(
@@ -249,10 +249,10 @@ class _SchedulePageState extends State<SchedulePage>
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
 
-    Widget body;
-
     return new Scaffold(
-        drawer: new ScheduleDrawer(),
+        drawer: new ScheduleDrawer(
+          refreshIndicatorKey: _refreshIndicatorKey,
+        ),
         key: _scaffoldKey,
         appBar: new AppBar(
           title: new Text(currentSchedule?.givenName ?? widget.title),
@@ -280,7 +280,9 @@ class _SchedulePageState extends State<SchedulePage>
 
   Widget buildBodyWithoutWeeks() {
     return new Scaffold(
-      drawer: new ScheduleDrawer(),
+      drawer: new ScheduleDrawer(
+        refreshIndicatorKey: _refreshIndicatorKey,
+      ),
       body: new RefreshIndicator(
           onRefresh: fetchAndSetBookings,
           key: _refreshIndicatorKey,
@@ -300,10 +302,20 @@ class _SchedulePageState extends State<SchedulePage>
     );
   }
 
-  Widget buildEmptyBody(String message) {
+  Widget buildEmptyBody() {
     return new Scaffold(
-      drawer: new ScheduleDrawer(),
-      body: new Center(child: new Text(message)),
+      drawer: new ScheduleDrawer(
+        refreshIndicatorKey: _refreshIndicatorKey,
+      ),
+      body: new RefreshIndicator(
+        onRefresh: fetchAndSetBookings,
+        key: _refreshIndicatorKey,
+        child: new Center(
+            child: new RaisedButton(
+          onPressed: () => Navigator.of(context).pushNamed(SearchPage.path),
+          child: new Text("Lägg till schema"),
+        )),
+      ),
       appBar: new AppBar(
         title: new Text("Inget schema valt"),
       ),
@@ -315,10 +327,19 @@ class _SchedulePageState extends State<SchedulePage>
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule?.name];
+    List<ScheduleMeta> schedules = scheduleStore.state.schedules;
 
-    if (currentSchedule == null || scheduleStore.state.schedules.isEmpty) {
-      return buildEmptyBody("Inget schema valt");
+    if (currentSchedule == null ||
+        schedules.isEmpty ||
+        !schedules.contains(currentSchedule)) {
+      if (schedules.isNotEmpty) {
+        scheduleStore
+            .dispatch(new SetCurrentScheduleAction(schedule: schedules.first));
+        _refreshIndicatorKey.currentState?.show();
+      }
+      return buildEmptyBody();
     } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
+      _refreshIndicatorKey.currentState?.show();
       return buildBodyWithoutWeeks();
     } else {
       return buildTabbedBody();
