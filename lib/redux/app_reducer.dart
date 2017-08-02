@@ -34,6 +34,7 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
     SetCurrentScheduleAction: _setCurrentScheduleAction,
     SetWeeksForCurrentScheduleAction: _setWeeksForCurrentScheduleAction,
     SetSignatureMap: _setSignatureMapAction,
+    AddSignature: _addSignatureAction,
   };
 
   @override
@@ -80,6 +81,12 @@ ScheduleState _setWeeksForCurrentScheduleAction(
 ScheduleState _setSignatureMapAction(
     ScheduleState state, SetSignatureMap action) {
   ScheduleState newState = state.apply(signatureMap: action.signatures);
+  saveStateToFile(JSON.encode(newState.serialize()));
+  return newState;
+}
+
+ScheduleState _addSignatureAction (ScheduleState state, AddSignature action) {
+  ScheduleState newState = state.apply(signatureMap: state.signatureMap..addAll(action.signatures));
   saveStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }

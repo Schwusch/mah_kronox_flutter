@@ -45,3 +45,9 @@ class SetSignatureMap extends Action {
 
   SetSignatureMap({this.signatures});
 }
+
+class AddSignature extends Action {
+  final Map<String, String> signatures;
+
+  AddSignature({this.signatures});
+}

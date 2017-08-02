@@ -98,21 +98,16 @@ Future<Null> getAllSignaturesFromBookings(List<Booking> bookings) async {
     }
   }
 
-  List<Future<String>> futures = [];
-
   for (String signature in signatures) {
-    futures.add(getSignature(signature));
+    if(scheduleStore.state.signatureMap[signature] == null) {
+      getSignature(signature).then((String str) {
+        List<String> splitted = str.split(", ");
+        scheduleStore.dispatch(new AddSignature(signatures: {
+          splitted[0]: splitted[1]
+        }));
+      }).catchError((){});
+    }
   }
-
-  List<String> signatureTuples = await Future.wait(futures);
-  Map<String, String> signatureMap = new Map();
-
-  for (String str in signatureTuples) {
-    List<String> splitted = str.split(", ");
-    signatureMap[splitted[0]] = splitted[1];
-  }
-
-  scheduleStore.dispatch(new SetSignatureMap(signatures: signatureMap));
 }
 
 Future<String> getSignature(String signature) async {
