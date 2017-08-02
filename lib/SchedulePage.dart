@@ -331,7 +331,7 @@ class _SchedulePageState extends State<SchedulePage>
 
     if (currentSchedule == null ||
         schedules.isEmpty ||
-        !schedules.contains(currentSchedule)) {
+        !schedules.contains(currentSchedule) && currentSchedule.name != "all") {
       if (schedules.isNotEmpty) {
         scheduleStore
             .dispatch(new SetCurrentScheduleAction(schedule: schedules.first));
