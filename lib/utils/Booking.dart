@@ -7,6 +7,9 @@ class Booking {
   String moment;
   List<String> signatures;
 
+  int get hashCode => uuid?.hashCode;
+  operator ==(dynamic o) => uuid == o.uuid;
+
   Map<String, dynamic> serialize() {
     return {
       "start": start.toIso8601String(),
@@ -33,5 +36,3 @@ class Booking {
     return deserialized;
   }
 }
-
-class BookingSerializer {}

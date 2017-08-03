@@ -89,7 +89,7 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(
   return new Tuple2(program, bookings);
 }
 
-Future<Null> getAllSignaturesFromBookings(List<Booking> bookings) async {
+Future<Null> getAllSignaturesFromBookings(Set<Booking> bookings) async {
   Set<String> signatures = new Set<String>();
 
   for (Booking booking in bookings) {
@@ -99,13 +99,12 @@ Future<Null> getAllSignaturesFromBookings(List<Booking> bookings) async {
   }
 
   for (String signature in signatures) {
-    if(scheduleStore.state.signatureMap[signature] == null) {
+    if (scheduleStore.state.signatureMap[signature] == null) {
       getSignature(signature).then((String str) {
         List<String> splitted = str.split(", ");
-        scheduleStore.dispatch(new AddSignature(signatures: {
-          splitted[0]: splitted[1]
-        }));
-      }).catchError((){});
+        scheduleStore
+            .dispatch(new AddSignature(signatures: {splitted[0]: splitted[1]}));
+      }).catchError(() {});
     }
   }
 }
@@ -124,29 +123,31 @@ Future<String> getSignature(String signature) async {
 Map<String, List<Week>> buildWeeksStructureMap(
     Map<ScheduleMeta, List<Booking>> bookingsMap) {
   Map<String, List<Week>> weekMap = new Map();
-  List<Booking> allBookings = [];
+  Set<Booking> allBookings = new Set();
 
   bookingsMap.forEach((key, value) {
     allBookings.addAll(value);
-    weekMap[key.name] = buildWeeksStructure(value);
+    weekMap[key.name] = buildWeeksStructure(value.toSet());
   });
 
-  getAllSignaturesFromBookings(allBookings).catchError((var e) => print(e.toString()));
+  getAllSignaturesFromBookings(allBookings)
+      .catchError((var e) => print(e.toString()));
 
   weekMap["all"] = buildWeeksStructure(allBookings);
   return weekMap;
 }
 
-List<Week> buildWeeksStructure(List<Booking> bookings) {
+List<Week> buildWeeksStructure(Set<Booking> bookingsSet) {
   List<Week> weeks = <Week>[];
   DateFormat dateFormatter = new DateFormat("d MMM ''yy", "sv");
   DateFormat weekdayFormatter = new DateFormat("EEEE", "sv");
 
-  if (bookings.isNotEmpty) {
+  if (bookingsSet.isNotEmpty) {
+    List<Booking> bookings = bookingsSet.toList();
     // Sort bookings by DateTime
     bookings.sort((a, b) => a.start.compareTo(b.start));
-
-    Booking lastBooking = bookings.first;
+    
+    Booking lastBooking = bookings.removeAt(0);
 
     Day day = new Day(
         bookings: <Booking>[lastBooking],
@@ -176,7 +177,7 @@ List<Week> buildWeeksStructure(List<Booking> bookings) {
             weekday: weekdayFormatter.format(booking.start));
 
         week.days.add(day);
-      } else if (lastBooking.uuid != booking.uuid) {
+      } else {
         day.bookings.add(booking);
       }
 
