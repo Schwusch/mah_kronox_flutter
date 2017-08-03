@@ -35,13 +35,47 @@ class _SchedulePageState extends State<SchedulePage>
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   TabController _tabController;
 
-  Future<Null> fetchAndSetBookings() {
+  @override
+  void initState() {
+    super.initState();
+    // Manual handling of tabcontroller circumvents known bug:
+    // https://github.com/flutter/flutter/issues/11450
+    // https://github.com/flutter/flutter/issues/10322
+    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
+    List<Week> weeksToDisplay =
+        scheduleStore.state.weeksMap[currentSchedule?.name];
+    _tabController =
+        new TabController(vsync: this, length: weeksToDisplay?.length ?? 0);
+
+    // Subscribe to Redux store changes
+    _subscribtion = scheduleStore.onChange
+        .listen((state) => setState(() => _updateState(state)));
+  }
+
+  _updateState(ScheduleState state) {
+    // Manual handling of tabcontroller circumvents known bug:
+    // https://github.com/flutter/flutter/issues/11450
+    // https://github.com/flutter/flutter/issues/10322
+    ScheduleMeta currentSchedule = state.currentSchedule;
+    List<Week> weeksToDisplay = state.weeksMap[currentSchedule?.name];
+    this._tabController = new TabController(
+        vsync: this, length: weeksToDisplay?.length ?? 0, initialIndex: 0);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscribtion.cancel();
+    _tabController.dispose();
+  }
+
+  Future<Null> fetchAndSetBookings() async {
     final Completer<Null> completer = new Completer<Null>();
     if (scheduleStore.state.currentSchedule != null) {
       fetchAllSchedules(scheduleStore.state.schedules).then((weeks) {
-        completer.complete(null);
         scheduleStore
             .dispatch(new SetWeeksForCurrentScheduleAction(weeks: weeks));
+        completer.complete(null);
       }).catchError((var e) {
         completer.completeError(e);
       });
@@ -65,41 +99,7 @@ class _SchedulePageState extends State<SchedulePage>
     });
   }
 
-  _updateState() {
-    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
-    List<Week> weeksToDisplay =
-        scheduleStore.state.weeksMap[currentSchedule?.name];
-
-    this._tabController = new TabController(
-        vsync: this, length: weeksToDisplay?.length ?? 0, initialIndex: 0);
-  }
-
-  _onStoreChange(_) {
-    if (mounted) {
-      setState(_updateState);
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
-    List<Week> weeksToDisplay =
-        scheduleStore.state.weeksMap[currentSchedule?.name];
-
-    _tabController =
-        new TabController(vsync: this, length: weeksToDisplay?.length ?? 0);
-    _subscribtion = scheduleStore.onChange.listen(_onStoreChange);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _subscribtion.cancel();
-    _tabController.dispose();
-  }
-
-  Widget _createScheduleItem(Booking booking) {
+  Widget _buildBookingCard(Booking booking) {
     String teachers = "";
     Map signaturemap = scheduleStore.state.signatureMap;
 
@@ -114,7 +114,7 @@ class _SchedulePageState extends State<SchedulePage>
                   new TextStyle(color: themeStore.state.accentColor.shade700),
             ));
 
-    List<Widget> leftColumnChildren = [
+    List<Widget> timeAndLocationChildren = [
       new Text(timeFormatter.format(booking.start),
           style: new TextStyle(
               fontSize: 24.0,
@@ -127,7 +127,7 @@ class _SchedulePageState extends State<SchedulePage>
               fontWeight: FontWeight.bold)),
     ];
 
-    leftColumnChildren.addAll(locations);
+    timeAndLocationChildren.addAll(locations);
 
     return new Card(
         elevation: 3.0,
@@ -145,7 +145,7 @@ class _SchedulePageState extends State<SchedulePage>
             children: <Widget>[
               new Container(
                 child: new Column(
-                  children: leftColumnChildren,
+                  children: timeAndLocationChildren,
                 ),
                 padding: new EdgeInsets.all(5.0),
                 width: 110.0,
@@ -171,7 +171,7 @@ class _SchedulePageState extends State<SchedulePage>
         ));
   }
 
-  Widget _createDayCard(Day day) {
+  Widget _buildDayColumn(Day day) {
     return new Column(
       children: <Widget>[
         new Padding(
@@ -198,13 +198,13 @@ class _SchedulePageState extends State<SchedulePage>
             padding: new EdgeInsets.all(5.0),
             child: new Column(
                 children: day.bookings
-                    .map((booking) => _createScheduleItem(booking))
+                    .map((booking) => _buildBookingCard(booking))
                     .toList(growable: false)))
       ],
     );
   }
 
-  List<Widget> buildAppBarActions() {
+  List<Widget> _buildAppBarActions() {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
 
     return <Widget>[
@@ -244,7 +244,7 @@ class _SchedulePageState extends State<SchedulePage>
     ];
   }
 
-  Widget buildTabbedBody() {
+  Widget _buildTabbedBody() {
     ScheduleMeta currentSchedule = scheduleStore.state.currentSchedule;
     List<Week> weeksToDisplay =
         scheduleStore.state.weeksMap[currentSchedule.name];
@@ -263,7 +263,7 @@ class _SchedulePageState extends State<SchedulePage>
                 ?.toList(),
             isScrollable: true,
           ),
-          actions: buildAppBarActions(),
+          actions: _buildAppBarActions(),
         ),
         body: new RefreshIndicator(
           onRefresh: fetchAndSetBookings,
@@ -273,12 +273,12 @@ class _SchedulePageState extends State<SchedulePage>
               children: weeksToDisplay.map((Week week) {
                 return new ListView(
                     children:
-                        week.days.map((day) => _createDayCard(day)).toList());
+                        week.days.map((day) => _buildDayColumn(day)).toList());
               })?.toList()),
         ));
   }
 
-  Widget buildBodyWithoutWeeks() {
+  Widget _buildBodyWithoutWeeks() {
     return new Scaffold(
       drawer: new ScheduleDrawer(
         refreshIndicatorKey: _refreshIndicatorKey,
@@ -297,12 +297,12 @@ class _SchedulePageState extends State<SchedulePage>
         title: new Text(scheduleStore.state.currentSchedule?.givenName ??
             scheduleStore.state.currentSchedule?.name ??
             "Inget Schema valt"),
-        actions: buildAppBarActions(),
+        actions: _buildAppBarActions(),
       ),
     );
   }
 
-  Widget buildEmptyBody() {
+  Widget _buildEmptyBody() {
     return new Scaffold(
       drawer: new ScheduleDrawer(
         refreshIndicatorKey: _refreshIndicatorKey,
@@ -337,12 +337,12 @@ class _SchedulePageState extends State<SchedulePage>
             .dispatch(new SetCurrentScheduleAction(schedule: schedules.first));
         _refreshIndicatorKey.currentState?.show();
       }
-      return buildEmptyBody();
+      return _buildEmptyBody();
     } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
       _refreshIndicatorKey.currentState?.show();
-      return buildBodyWithoutWeeks();
+      return _buildBodyWithoutWeeks();
     } else {
-      return buildTabbedBody();
+      return _buildTabbedBody();
     }
   }
 }

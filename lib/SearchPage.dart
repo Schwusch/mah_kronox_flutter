@@ -39,7 +39,15 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    searchStream.cancel();
+    _subscribtion.cancel();
+  }
+
   _SearchPageState() {
+    // Make an Observable for the search field
     searchStream = new Observable<String>(onTextChanged)
         // Use distinct() to ignore all keystrokes that don't have an impact on the input field's value (brake, ctrl, shift, ..)
         .distinct((String prev, String next) => prev == next)
@@ -54,6 +62,7 @@ class _SearchPageState extends State<SearchPage> {
             });
           }
         })
+        // Only do lookups on non-empty strings
         .where((String str) => str.isNotEmpty)
         .doOnEach((var _) {
           if (mounted) {
@@ -90,13 +99,6 @@ class _SearchPageState extends State<SearchPage> {
         }, cancelOnError: false);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    searchStream.cancel();
-    _subscribtion.cancel();
-  }
-
   Observable<dynamic> fetchAutoComplete(String searchString) {
     return new Observable<String>.fromFuture(http.read(
             "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}"))
@@ -120,7 +122,7 @@ class _SearchPageState extends State<SearchPage> {
         child: new Scaffold(
             key: _scaffoldKey,
             appBar: new AppBar(
-              title: buildSearch(),
+              title: buildSearchBar(),
             ),
             body: loading
                 ? new Center(child: new CircularProgressIndicator())
@@ -129,7 +131,7 @@ class _SearchPageState extends State<SearchPage> {
                     : buildResults()));
   }
 
-  Widget buildSearch() {
+  Widget buildSearchBar() {
     return new Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
       child: new Row(children: <Widget>[
@@ -194,6 +196,7 @@ class ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String name = data["value"];
+    // Server JSON response contains HTML... :(
     String description =
         data["label"].replaceAll(new RegExp(r"<(?:.|\n)*?>"), "");
 

@@ -50,6 +50,7 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
             description: "Alla mina scheman",
           )));
 
+          // Refresh schedules from server
           widget.refreshIndicatorKey?.currentState?.show();
           Navigator.of(context).pop();
         },
@@ -65,6 +66,8 @@ class _ScheduleDrawerState extends State<ScheduleDrawer> {
           onTap: () {
             scheduleStore
                 .dispatch(new SetCurrentScheduleAction(schedule: schedule));
+
+            // Refresh schedules from server
             widget.refreshIndicatorKey?.currentState?.show();
             Navigator.of(context).pop();
           },

@@ -17,5 +17,13 @@ To run this project:
 
 Application-specific code is in [/lib](/lib). 
 
-This project utilize [Redux](https://pub.dartlang.org/packages/redux). If you are not familiar with redux, have a look at [Facebooks official documentation](https://github.com/reactjs/redux).
+This project utilizes [Redux](https://pub.dartlang.org/packages/redux). If you are not familiar with redux, have a look at [Facebooks official documentation](https://github.com/reactjs/redux).
 
+## Todo
+
+ - [ ] Translate and add a language setting
+ - [ ] A search bar to search through bookings
+ - [ ] Renaming schedules after adding
+ - [ ] Reordering schedules
+ - [ ] Possibly setting alarms for upcoming bookings
+ - [ ] Customizing bookings e.g. setting card background color for specific bookings

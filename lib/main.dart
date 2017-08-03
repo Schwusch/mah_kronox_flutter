@@ -16,13 +16,16 @@ import 'utils/fileStorage.dart';
 
 const appName = "MAH Schema";
 
+// Entry point of the application
 void main() {
   run();
 }
 
 Future run() async {
+  // Show a splash screen while loading settings
   runApp(new Splash());
   await _init();
+  // Launch the real app
   runApp(new App());
 }
 
@@ -72,8 +75,8 @@ class _AppState extends State<App> {
         theme: themeStore.state.theme,
         title: appName,
         routes: {
-          SchedulePage.path: (BuildContext context) =>
-              new SchedulePage(title: "Schemavisning"),
+          SchedulePage.path: (BuildContext context) =>  // Home
+              new SchedulePage(title: "Schemavisning"), // Home
           SettingsPage.path: (BuildContext context) =>
               new SettingsPage(title: "Inställningar"),
           SearchPage.path: (BuildContext context) =>
@@ -83,17 +86,15 @@ class _AppState extends State<App> {
 }
 
 Future<Null> _init() async {
-  themeStore = new ThemeStore();
-  scheduleStore = new ScheduleStore();
-
   await initializeDateFormatting("sv", null);
 
+  scheduleStore = new ScheduleStore();
   String stateString = await loadStateFromFile();
 
   if (stateString != null) {
     try {
       ScheduleState loadedState =
-          ScheduleState.deserialize(JSON.decode(stateString));
+      ScheduleState.deserialize(JSON.decode(stateString));
       scheduleStore = new ScheduleStore(initialState: loadedState);
     } catch (exception, stackTrace) {
       print(exception);
@@ -106,6 +107,8 @@ Future<Null> _init() async {
   bool bright = prefs.getBool(ThemeState.kBrightnessKey);
   int primary = prefs.getInt(ThemeState.kPrimaryColorKey);
   int accent = prefs.getInt(ThemeState.kAccentColorKey);
+
+  themeStore = new ThemeStore();
 
   themeStore.dispatch(new ChangeThemeAction(
       brightness: bright == true ? Brightness.dark : Brightness.light,
