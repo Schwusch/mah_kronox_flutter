@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/mah_kronox_flutter.iml" filepath="$PROJECT_DIR$/mah_kronox_flutter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/mah_kronox_flutter_android.iml" filepath="$PROJECT_DIR$/mah_kronox_flutter_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mahschema.iml" filepath="$PROJECT_DIR$/mahschema.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mahschema_android.iml" filepath="$PROJECT_DIR$/mahschema_android.iml" />
     </modules>
   </component>
 </project>

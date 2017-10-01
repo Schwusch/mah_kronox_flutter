@@ -3,7 +3,6 @@ import 'package:flutter_color_picker/flutter_color_picker.dart';
 
 import 'redux/store.dart';
 import 'redux/actions.dart';
-import 'redux/app_state.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({Key key, this.title}) : super(key: key);
