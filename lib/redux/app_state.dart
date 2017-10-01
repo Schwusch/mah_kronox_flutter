@@ -16,9 +16,9 @@ class ThemeState {
 
   ThemeState({this.brightness, this.primaryColor, this.accentColor})
       : _theme = new ThemeData(
-            brightness: brightness,
-            primarySwatch: primaryColor,
-            accentColor: accentColor);
+      brightness: brightness,
+      primarySwatch: primaryColor,
+      accentColor: accentColor);
 
   factory ThemeState.initial() => new ThemeState(
       brightness: Brightness.light,
@@ -27,12 +27,28 @@ class ThemeState {
 
   ThemeState apply(
       {Brightness brightness,
-      MaterialColor primaryColor,
-      MaterialAccentColor accentColor}) {
+        MaterialColor primaryColor,
+        MaterialAccentColor accentColor}) {
     return new ThemeState(
         brightness: brightness ?? this.brightness,
         primaryColor: primaryColor ?? this.primaryColor,
         accentColor: accentColor ?? this.accentColor);
+  }
+
+  Map<String, dynamic> serialize() {
+    return {
+      kBrightnessKey: brightness == Brightness.dark,
+      kPrimaryColorKey: Colors.primaries.indexOf(primaryColor),
+      kAccentColorKey: Colors.accents.indexOf(accentColor),
+    };
+  }
+
+  static ThemeState deserialize(Map<String, dynamic> state) {
+    return new ThemeState(
+      brightness: state[kBrightnessKey] ? Brightness.dark : Brightness.light,
+      primaryColor: Colors.primaries[state[kPrimaryColorKey]],
+      accentColor: Colors.accents[state[kAccentColorKey]],
+    );
   }
 }
 
@@ -53,9 +69,9 @@ class ScheduleState {
 
   ScheduleState apply(
       {List<ScheduleMeta> schedules,
-      ScheduleMeta currentSchedule,
-      Map<String, List<Week>> weeksMap,
-      Map<String, String> signatureMap}) {
+        ScheduleMeta currentSchedule,
+        Map<String, List<Week>> weeksMap,
+        Map<String, String> signatureMap}) {
     return new ScheduleState(
         schedules: schedules ?? this.schedules,
         currentSchedule: currentSchedule ?? this.currentSchedule,
@@ -71,7 +87,7 @@ class ScheduleState {
     return {
       "signatureMap": signatureMap,
       "schedules":
-          schedules.map((meta) => meta.serialize()).toList(growable: false),
+      schedules.map((meta) => meta.serialize()).toList(growable: false),
       "currentSchedule": currentSchedule?.serialize(),
       "weeksMap": weeksMapsSerialized
     };

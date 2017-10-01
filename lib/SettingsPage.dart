@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_color_picker/flutter_color_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'redux/store.dart';
 import 'redux/actions.dart';
@@ -61,7 +60,6 @@ class _SettingsPageState extends State<SettingsPage> {
               themeStore.dispatch(new ChangeThemeAction(
                   brightness:
                       value == true ? Brightness.dark : Brightness.light));
-              persistBrightness(value);
             }
           })
     ]));
@@ -76,7 +74,6 @@ class _SettingsPageState extends State<SettingsPage> {
               selected: themeStore.state.primaryColor));
       if (color != null) {
         themeStore.dispatch(new ChangeThemeAction(primaryColor: color));
-        persistAccentColor(color);
       }
     });
   }
@@ -90,27 +87,8 @@ class _SettingsPageState extends State<SettingsPage> {
               selected: themeStore.state.accentColor));
       if (color != null) {
         themeStore.dispatch(new ChangeThemeAction(accentColor: color));
-        persistAccentColor(color);
       }
     });
-  }
-
-  persistBrightness(bool value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool(ThemeState.kBrightnessKey, value);
-    await prefs.commit();
-  }
-
-  persistPrimaryColor(ColorSwatch color) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt(ThemeState.kPrimaryColorKey, Colors.primaries.indexOf(color));
-    await prefs.commit();
-  }
-
-  persistAccentColor(ColorSwatch color) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt(ThemeState.kAccentColorKey, Colors.accents.indexOf(color));
-    await prefs.commit();
   }
 
   Widget _buildColorTile(String text, ColorSwatch color, VoidCallback onTap) {

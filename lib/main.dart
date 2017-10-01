@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'SchedulePage.dart';
@@ -89,12 +88,12 @@ Future<Null> _init() async {
   await initializeDateFormatting("sv", null);
 
   scheduleStore = new ScheduleStore();
-  String stateString = await loadStateFromFile();
+  String scheduleStateString = await loadScheduleStateFromFile();
 
-  if (stateString != null) {
+  if (scheduleStateString != null) {
     try {
       ScheduleState loadedState =
-      ScheduleState.deserialize(JSON.decode(stateString));
+      ScheduleState.deserialize(JSON.decode(scheduleStateString));
       scheduleStore = new ScheduleStore(initialState: loadedState);
     } catch (exception, stackTrace) {
       print(exception);
@@ -102,22 +101,17 @@ Future<Null> _init() async {
     }
   }
 
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  bool bright = prefs.getBool(ThemeState.kBrightnessKey);
-  int primary = prefs.getInt(ThemeState.kPrimaryColorKey);
-  int accent = prefs.getInt(ThemeState.kAccentColorKey);
-
   themeStore = new ThemeStore();
+  String themeStateString = await loadThemeStateFromFile();
 
-  themeStore.dispatch(new ChangeThemeAction(
-      brightness: bright == true ? Brightness.dark : Brightness.light,
-      primaryColor:
-          primary != null && primary >= 0 && primary > Colors.primaries.length
-              ? Colors.primaries[primary]
-              : null,
-      accentColor:
-          accent != null && accent >= 0 && accent > Colors.accents.length
-              ? Colors.accents[accent]
-              : null));
+  if (themeStateString != null) {
+    try {
+      ThemeState loadedState =
+      ThemeState.deserialize(JSON.decode(themeStateString));
+      themeStore = new ThemeStore(initialState: loadedState);
+    } catch (exception, stackTrace) {
+      print(exception);
+      print(stackTrace);
+    }
+  }
 }

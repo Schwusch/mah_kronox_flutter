@@ -21,10 +21,12 @@ class ThemeReducer extends redux.Reducer<ThemeState, Action> {
 }
 
 ThemeState _changeThemeAction(ThemeState state, ChangeThemeAction action) {
-  return state.apply(
+  ThemeState newState = state.apply(
       primaryColor: action.primaryColor,
       brightness: action.brightness,
       accentColor: action.accentColor);
+  saveThemeStateToFile(JSON.encode(newState.serialize()));
+  return newState;
 }
 
 class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
@@ -48,7 +50,7 @@ class ScheduleReducer extends redux.Reducer<ScheduleState, Action> {
 ScheduleState _setCurrentScheduleAction(
     ScheduleState state, SetCurrentScheduleAction action) {
   ScheduleState newState = state.apply(currentSchedule: action.schedule);
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
@@ -56,7 +58,7 @@ ScheduleState _addScheduleAction(
     ScheduleState state, AddScheduleAction action) {
   ScheduleState newState =
       state.apply(schedules: state.schedules.toList()..add(action.schedule));
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
@@ -67,26 +69,26 @@ ScheduleState _removeScheduleAction(
         ..removeWhere((schedule) => schedule.name == action.schedule),
       weeksMap: state.weeksMap..remove(action.schedule),
   );
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
 ScheduleState _setWeeksForCurrentScheduleAction(
     ScheduleState state, SetWeeksForCurrentScheduleAction action) {
   ScheduleState newState = state.apply(weeksMap: action.weeks);
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
 ScheduleState _setSignatureMapAction(
     ScheduleState state, SetSignatureMap action) {
   ScheduleState newState = state.apply(signatureMap: action.signatures);
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
 
 ScheduleState _addSignatureAction (ScheduleState state, AddSignature action) {
   ScheduleState newState = state.apply(signatureMap: state.signatureMap..addAll(action.signatures));
-  saveStateToFile(JSON.encode(newState.serialize()));
+  saveScheduleStateToFile(JSON.encode(newState.serialize()));
   return newState;
 }
