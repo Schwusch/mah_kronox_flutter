@@ -34,6 +34,9 @@ class _SchedulePageState extends State<SchedulePage>
   StreamSubscription<ScheduleState> _subscribtion;
   DateFormat timeFormatter = new DateFormat("HH:mm", "sv_SE");
   TabController _tabController;
+  final TextEditingController _textController = new TextEditingController();
+  String searchTerm = "";
+  bool search = false;
 
   @override
   void initState() {
@@ -97,6 +100,38 @@ class _SchedulePageState extends State<SchedulePage>
                 _refreshIndicatorKey.currentState?.show();
               })));
     });
+  }
+
+  Widget buildSearchBar() {
+    return new Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: new Row(children: <Widget>[
+        new Flexible(
+          child: new TextField(
+            style: new TextStyle(fontSize: 20.0),
+            autofocus: true,
+            onChanged: (String str) {
+              this.searchTerm = str;
+            },
+            decoration: new InputDecoration.collapsed(
+                hintText: "Filtrera"),
+            controller: _textController,
+          ),
+        ),
+        new Container(
+          child: new IconButton(
+            icon: new Icon(Icons.clear),
+            onPressed: () {
+              setState(() {
+                this.search = false;
+                _textController.clear();
+                this.searchTerm = "";
+              });
+            }
+          )
+        ),
+      ]),
+    );
   }
 
   Widget _buildBookingCard(Booking booking) {
@@ -172,6 +207,15 @@ class _SchedulePageState extends State<SchedulePage>
   }
 
   Widget _buildDayColumn(Day day) {
+    List bookings = day.bookings
+        .where((booking) =>  booking.searchableText.toLowerCase().contains(searchTerm.toLowerCase()))
+        .map((booking) => _buildBookingCard(booking))
+        .toList(growable: false);
+
+    if(bookings.isEmpty) {
+      return new Container();
+    }
+
     return new Column(
       children: <Widget>[
         new Padding(
@@ -197,9 +241,7 @@ class _SchedulePageState extends State<SchedulePage>
         new Padding(
             padding: new EdgeInsets.all(5.0),
             child: new Column(
-                children: day.bookings
-                    .map((booking) => _buildBookingCard(booking))
-                    .toList(growable: false)))
+                children: bookings))
       ],
     );
   }
@@ -209,11 +251,21 @@ class _SchedulePageState extends State<SchedulePage>
 
     return <Widget>[
       new IconButton(
+          icon: const Icon(Icons.search),
+          tooltip: 'Search',
+          onPressed: () {
+            setState(() {
+              search = true;
+            });
+          }
+      ),
+      new IconButton(
           icon: const Icon(Icons.refresh),
           tooltip: 'Refresh',
           onPressed: () {
             _refreshIndicatorKey.currentState?.show();
-          }),
+          }
+      ),
       new IconButton(
           icon: const Icon(Icons.info),
           tooltip: 'Information',
@@ -239,8 +291,10 @@ class _SchedulePageState extends State<SchedulePage>
                       ),
                     ),
                   ],
-                ));
-          })
+                )
+            );
+          }
+      )
     ];
   }
 
@@ -255,7 +309,9 @@ class _SchedulePageState extends State<SchedulePage>
         ),
         key: _scaffoldKey,
         appBar: new AppBar(
-          title: new Text(currentSchedule?.givenName ?? widget.title),
+          title: search ?
+            buildSearchBar() :
+            new Text(currentSchedule?.givenName ?? widget.title),
           bottom: new TabBar(
             controller: this._tabController,
             tabs: weeksToDisplay
@@ -263,7 +319,7 @@ class _SchedulePageState extends State<SchedulePage>
                 ?.toList(),
             isScrollable: true,
           ),
-          actions: _buildAppBarActions(),
+          actions: search ? null : _buildAppBarActions(),
         ),
         body: new RefreshIndicator(
           onRefresh: fetchAndSetBookings,
@@ -278,31 +334,7 @@ class _SchedulePageState extends State<SchedulePage>
         ));
   }
 
-  Widget _buildBodyWithoutWeeks() {
-    return new Scaffold(
-      drawer: new ScheduleDrawer(
-        refreshIndicatorKey: _refreshIndicatorKey,
-      ),
-      body: new RefreshIndicator(
-          onRefresh: fetchAndSetBookings,
-          key: _refreshIndicatorKey,
-          child: new Center(
-              child: new RaisedButton(
-            onPressed: () {
-              _refreshIndicatorKey.currentState?.show();
-            },
-            child: new Icon(Icons.refresh),
-          ))),
-      appBar: new AppBar(
-        title: new Text(scheduleStore.state.currentSchedule?.givenName ??
-            scheduleStore.state.currentSchedule?.name ??
-            "Inget Schema valt"),
-        actions: _buildAppBarActions(),
-      ),
-    );
-  }
-
-  Widget _buildEmptyBody() {
+  Widget _buildEmptyBody(Widget widget) {
     return new Scaffold(
       drawer: new ScheduleDrawer(
         refreshIndicatorKey: _refreshIndicatorKey,
@@ -311,13 +343,12 @@ class _SchedulePageState extends State<SchedulePage>
         onRefresh: fetchAndSetBookings,
         key: _refreshIndicatorKey,
         child: new Center(
-            child: new RaisedButton(
-          onPressed: () => Navigator.of(context).pushNamed(SearchPage.path),
-          child: new Text("Lägg till schema"),
-        )),
+            child: widget),
       ),
       appBar: new AppBar(
-        title: new Text("Inget schema valt"),
+        title:new Text(scheduleStore.state.currentSchedule?.givenName ??
+            scheduleStore.state.currentSchedule?.name ??
+            "Inget Schema valt"),
       ),
     );
   }
@@ -337,10 +368,20 @@ class _SchedulePageState extends State<SchedulePage>
             .dispatch(new SetCurrentScheduleAction(schedule: schedules.first));
         _refreshIndicatorKey.currentState?.show();
       }
-      return _buildEmptyBody();
+      return _buildEmptyBody(
+          new RaisedButton(
+            onPressed: () => Navigator.of(context).pushNamed(SearchPage.path),
+            child: new Text("Lägg till schema"),
+          )
+      );
     } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
       _refreshIndicatorKey.currentState?.show();
-      return _buildBodyWithoutWeeks();
+      return _buildEmptyBody(
+          new RaisedButton(
+            onPressed: () {_refreshIndicatorKey.currentState?.show();},
+            child: new Icon(Icons.refresh),
+          )
+      );
     } else {
       return _buildTabbedBody();
     }

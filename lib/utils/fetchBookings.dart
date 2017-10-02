@@ -83,6 +83,18 @@ Future<Tuple2<ScheduleMeta, List<Booking>>> fetchBookings(
     e.signatures = signatures;
     e.course = course;
 
+    Map signaturemap = scheduleStore.state.signatureMap;
+
+    StringBuffer sb = new StringBuffer()
+      ..write(e.moment)
+      ..write(e.location)
+      ..write(e.course);
+
+    for (String teacher in e.signatures) {
+      sb.write(signaturemap[teacher] ?? teacher);
+    }
+
+    e.searchableText = sb.toString();
     bookings.add(e);
   }
 

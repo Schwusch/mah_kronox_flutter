@@ -1,3 +1,5 @@
+import '../redux/store.dart';
+
 class Booking {
   DateTime start;
   DateTime end;
@@ -6,6 +8,7 @@ class Booking {
   String course;
   String moment;
   List<String> signatures;
+  String searchableText;
 
   int get hashCode => uuid?.hashCode;
   operator ==(dynamic o) => uuid == o.uuid;
@@ -23,6 +26,8 @@ class Booking {
   }
 
   static Booking deserialize(Map<String, dynamic> booking) {
+    Map signaturemap = scheduleStore.state.signatureMap;
+
     Booking deserialized = new Booking();
 
     deserialized.start = DateTime.parse(booking["start"]);
@@ -32,6 +37,17 @@ class Booking {
     deserialized.course = booking["course"];
     deserialized.moment = booking["moment"];
     deserialized.signatures = booking["signatures"];
+
+    StringBuffer sb = new StringBuffer()
+      ..write(deserialized.moment)
+      ..write(deserialized.location)
+      ..write(deserialized.course);
+
+    for (String teacher in deserialized.signatures) {
+      sb.write(signaturemap[teacher] ?? teacher);
+    }
+
+    deserialized.searchableText = sb.toString();
 
     return deserialized;
   }
