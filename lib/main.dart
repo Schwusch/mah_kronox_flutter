@@ -94,6 +94,7 @@ Future<Null> _init() async {
     try {
       ScheduleState loadedState =
       ScheduleState.deserialize(JSON.decode(scheduleStateString));
+      loadedState.rebuildSearch();
       scheduleStore = new ScheduleStore(initialState: loadedState);
     } catch (exception, stackTrace) {
       print(exception);

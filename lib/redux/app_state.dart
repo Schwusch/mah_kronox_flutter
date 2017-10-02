@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/Week.dart';
+import '../utils/Day.dart';
+import '../utils/Booking.dart';
 import '../utils/ScheduleMeta.dart';
 
 class ThemeState {
@@ -77,6 +79,27 @@ class ScheduleState {
         currentSchedule: currentSchedule ?? this.currentSchedule,
         weeksMap: weeksMap ?? this.weeksMap,
         signatureMap: signatureMap ?? this.signatureMap);
+  }
+
+  rebuildSearch() {
+    this.weeksMap.forEach((String _, List<Week> weeks) {
+      weeks.forEach((Week week) {
+        week.days.forEach((Day day) {
+          day.bookings.forEach((Booking booking) {
+            StringBuffer sb = new StringBuffer()
+              ..write(booking.moment)
+              ..write(booking.location)
+              ..write(booking.course);
+
+            for (String teacher in booking.signatures) {
+              sb.write(signatureMap[teacher] ?? teacher);
+            }
+
+            booking.searchableText = sb.toString();
+          });
+        });
+      });
+    });
   }
 
   Map<String, dynamic> serialize() {
