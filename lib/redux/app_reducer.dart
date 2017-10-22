@@ -93,14 +93,14 @@ ScheduleState _addSignatureAction (ScheduleState state, AddSignature action) {
   return newState;
 }
 
-class IgnoreReducer extends redux.Reducer<ScheduleState, Action> {
+class IgnoreReducer extends redux.Reducer<IgnoreState, Action> {
   final Map<Type, Function> _mapper = const <Type, Function>{
     AddHiddenBooking: _addHiddenBooking,
     RemoveHiddenBooking: _removeHiddenBooking
   };
 
   @override
-  ScheduleState reduce(ScheduleState state, Action action) {
+  IgnoreState reduce(IgnoreState state, Action action) {
     Function reducer = _mapper[action.runtimeType];
     // ignore: invocation_of_non_function
     return reducer != null ? reducer(state, action) : state;
@@ -108,9 +108,13 @@ class IgnoreReducer extends redux.Reducer<ScheduleState, Action> {
 }
 
 IgnoreState _addHiddenBooking (IgnoreState state, AddHiddenBooking action) {
-  return state..hiddenBookings.add(action.booking.uuid);
+  state.hiddenBookings.add(action.booking.uuid);
+  saveIgnoreStateToFile(JSON.encode(state.serialize()));
+  return state;
 }
 
 IgnoreState _removeHiddenBooking (IgnoreState state, RemoveHiddenBooking action) {
-  return state..hiddenBookings.remove(action.booking.uuid);
+  state.hiddenBookings.remove(action.booking.uuid);
+  saveIgnoreStateToFile(JSON.encode(state.serialize()));
+  return state;
 }

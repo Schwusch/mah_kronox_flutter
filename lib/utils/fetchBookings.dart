@@ -124,7 +124,7 @@ Future<Null> getAllSignaturesFromBookings(Set<Booking> bookings) async {
 Future<String> getSignature(String signature) async {
   var http = createHttpClient();
   String response = await http.read(
-      "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=signatur&endastForkortningar=true&term=${signature}");
+      "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=signatur&endastForkortningar=true&term=$signature");
   List decoded = JSON.decode(response);
   String html = decoded[0]["label"];
 

@@ -101,7 +101,7 @@ class _SearchPageState extends State<SearchPage> {
 
   Observable<dynamic> fetchAutoComplete(String searchString) {
     return new Observable<String>.fromFuture(http.read(
-            "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=${searchString}"))
+            "https://kronox.mah.se/ajax/ajax_autocompleteResurser.jsp?typ=${_selectedChoice.value}&term=$searchString"))
         .map((String response) => JSON.decode(response));
   }
 

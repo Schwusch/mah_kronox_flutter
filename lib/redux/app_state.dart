@@ -142,11 +142,11 @@ class IgnoreState {
 
   Map<String, dynamic> serialize() {
     return {
-      "hiddenBookings": hiddenBookings,
+      "hiddenBookings": hiddenBookings.toList(),
     };
   }
 
   static IgnoreState deserialize(Map<String, dynamic> state) {
-    return new IgnoreState(hiddenBookings: state["hiddenBookings"]);
+    return new IgnoreState(hiddenBookings: state["hiddenBookings"].toSet());
   }
 }

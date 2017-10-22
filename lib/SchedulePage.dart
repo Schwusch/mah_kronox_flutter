@@ -161,36 +161,34 @@ class _SchedulePageState extends State<SchedulePage>
 
     timeAndLocationChildren.addAll(locations);
 
-    Card card = new Card(
-        elevation: 3.0,
-        child: new InkWell(
-          onLongPress: () {
-            Navigator.push(
-                context,
-                new MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      new FullScreenBooking(booking: booking),
-                  fullscreenDialog: true,
-                ));
-          },
-          child: new Row(
-            children: <Widget>[
-              new Container(
-                child: new Column(
-                  children: timeAndLocationChildren,
-                ),
-                padding: new EdgeInsets.all(5.0),
-                width: 110.0,
-              ),
-              new Flexible(
-                  child: new Container(
+    return new InkWell(
+      onLongPress: () {
+        Navigator.push(
+            context,
+            new MaterialPageRoute(
+              builder: (BuildContext context) =>
+              new FullScreenBooking(booking: booking),
+              fullscreenDialog: true,
+            ));
+      },
+      child: new Row(
+        children: <Widget>[
+          new Container(
+            child: new Column(
+              children: timeAndLocationChildren,
+            ),
+            padding: new EdgeInsets.all(5.0),
+            width: 110.0,
+          ),
+          new Flexible(
+              child: new Container(
                 child: new Column(
                   children: <Widget>[
                     new Text(booking.course),
                     new Text(teachers,
                         style: new TextStyle(
                             color:
-                                themeStore.state.theme.textTheme.caption.color,
+                            themeStore.state.theme.textTheme.caption.color,
                             fontWeight: FontWeight.bold)),
                     new Text(booking.moment)
                   ],
@@ -198,11 +196,9 @@ class _SchedulePageState extends State<SchedulePage>
                 ),
                 padding: new EdgeInsets.all(5.0),
               ))
-            ],
-          ),
-        ));
-
-    return card;
+        ],
+      ),
+    );
   }
 
   Widget _buildDayColumn(Day day) {
@@ -210,7 +206,6 @@ class _SchedulePageState extends State<SchedulePage>
         .where((booking) => booking.searchableText
             .toLowerCase()
             .contains(searchTerm.toLowerCase()))
-        .map((booking) => _buildBookingCard(booking))
         .toList(growable: false);
 
     if (bookings.isEmpty) {
@@ -242,13 +237,21 @@ class _SchedulePageState extends State<SchedulePage>
         new Padding(
             padding: new EdgeInsets.all(5.0),
             child: new ExpansionPanelList(
-                children: bookings.map((Widget booking) {
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    if(isExpanded) {
+                      ignoreStore.dispatch(new AddHiddenBooking(booking: bookings[index]));
+                    } else {
+                      ignoreStore.dispatch(new RemoveHiddenBooking(booking: bookings[index]));
+                    }
+                  });
+                },
+                children: bookings.map((Booking booking) {
               return new ExpansionPanel(
-                  headerBuilder: (BuildContext context, bool isExpanded) {
-                    return new DualHeaderWithHint(
-                        name: null, hint: null, showHint: isExpanded);
-                  },
-                  body: booking);
+                  headerBuilder: (_, __) {return null;},
+                  body: _buildBookingCard(booking),
+                isExpanded: !ignoreStore.state.hiddenBookings.contains(booking.uuid)
+              );
             }).toList()))
       ],
     );
@@ -389,70 +392,3 @@ class _SchedulePageState extends State<SchedulePage>
   }
 }
 
-class DualHeaderWithHint extends StatelessWidget {
-  const DualHeaderWithHint({this.name, this.hint, this.showHint});
-
-  final String name;
-  final String hint;
-  final bool showHint;
-
-  Widget _crossFade(Widget first, Widget second, bool isExpanded) {
-    return new AnimatedCrossFade(
-      firstChild: first,
-      secondChild: second,
-      firstCurve: const Interval(0.0, 0.6, curve: Curves.fastOutSlowIn),
-      secondCurve: const Interval(0.4, 1.0, curve: Curves.fastOutSlowIn),
-      sizeCurve: Curves.fastOutSlowIn,
-      crossFadeState:
-          isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-      duration: const Duration(milliseconds: 200),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final TextTheme textTheme = theme.textTheme;
-
-    return new Row(children: <Widget>[
-      new Expanded(
-        flex: 2,
-        child: new Container(
-          margin: const EdgeInsets.only(left: 24.0),
-          child: new FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: new Text(
-              name,
-              style: textTheme.body1.copyWith(fontSize: 15.0),
-            ),
-          ),
-        ),
-      ),
-    ]);
-  }
-}
-
-typedef Widget DemoItemBodyBuilder<T>(DemoItem<T> item);
-
-class DemoItem<T> {
-  DemoItem({
-    this.name,
-    this.value,
-    this.hint,
-    this.builder,
-  });
-
-  final String name;
-  final String hint;
-  final DemoItemBodyBuilder<T> builder;
-  T value;
-  bool isExpanded = false;
-
-  ExpansionPanelHeaderBuilder get headerBuilder {
-    return (BuildContext context, bool isExpanded) {
-      return new DualHeaderWithHint(
-          name: name, hint: hint, showHint: isExpanded);
-    };
-  }
-}
