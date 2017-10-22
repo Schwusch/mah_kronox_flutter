@@ -113,23 +113,20 @@ class _SchedulePageState extends State<SchedulePage>
             onChanged: (String str) {
               this.searchTerm = str;
             },
-            decoration: new InputDecoration.collapsed(
-                hintText: "Filtrera"),
+            decoration: new InputDecoration.collapsed(hintText: "Filtrera"),
             controller: _textController,
           ),
         ),
         new Container(
-          child: new IconButton(
-            icon: new Icon(Icons.clear),
-            onPressed: () {
-              setState(() {
-                this.search = false;
-                _textController.clear();
-                this.searchTerm = "";
-              });
-            }
-          )
-        ),
+            child: new IconButton(
+                icon: new Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    this.search = false;
+                    _textController.clear();
+                    this.searchTerm = "";
+                  });
+                })),
       ]),
     );
   }
@@ -164,7 +161,7 @@ class _SchedulePageState extends State<SchedulePage>
 
     timeAndLocationChildren.addAll(locations);
 
-    return new Card(
+    Card card = new Card(
         elevation: 3.0,
         child: new InkWell(
           onLongPress: () {
@@ -204,15 +201,19 @@ class _SchedulePageState extends State<SchedulePage>
             ],
           ),
         ));
+
+    return card;
   }
 
   Widget _buildDayColumn(Day day) {
     List bookings = day.bookings
-        .where((booking) =>  booking.searchableText.toLowerCase().contains(searchTerm.toLowerCase()))
+        .where((booking) => booking.searchableText
+            .toLowerCase()
+            .contains(searchTerm.toLowerCase()))
         .map((booking) => _buildBookingCard(booking))
         .toList(growable: false);
 
-    if(bookings.isEmpty) {
+    if (bookings.isEmpty) {
       return new Container();
     }
 
@@ -240,8 +241,15 @@ class _SchedulePageState extends State<SchedulePage>
             )),
         new Padding(
             padding: new EdgeInsets.all(5.0),
-            child: new Column(
-                children: bookings))
+            child: new ExpansionPanelList(
+                children: bookings.map((Widget booking) {
+              return new ExpansionPanel(
+                  headerBuilder: (BuildContext context, bool isExpanded) {
+                    return new DualHeaderWithHint(
+                        name: null, hint: null, showHint: isExpanded);
+                  },
+                  body: booking);
+            }).toList()))
       ],
     );
   }
@@ -257,15 +265,13 @@ class _SchedulePageState extends State<SchedulePage>
             setState(() {
               search = true;
             });
-          }
-      ),
+          }),
       new IconButton(
           icon: const Icon(Icons.refresh),
           tooltip: 'Refresh',
           onPressed: () {
             _refreshIndicatorKey.currentState?.show();
-          }
-      ),
+          }),
       new IconButton(
           icon: const Icon(Icons.info),
           tooltip: 'Information',
@@ -291,10 +297,8 @@ class _SchedulePageState extends State<SchedulePage>
                       ),
                     ),
                   ],
-                )
-            );
-          }
-      )
+                ));
+          })
     ];
   }
 
@@ -309,9 +313,9 @@ class _SchedulePageState extends State<SchedulePage>
         ),
         key: _scaffoldKey,
         appBar: new AppBar(
-          title: search ?
-            buildSearchBar() :
-            new Text(currentSchedule?.givenName ?? widget.title),
+          title: search
+              ? buildSearchBar()
+              : new Text(currentSchedule?.givenName ?? widget.title),
           bottom: new TabBar(
             controller: this._tabController,
             tabs: weeksToDisplay
@@ -342,11 +346,10 @@ class _SchedulePageState extends State<SchedulePage>
       body: new RefreshIndicator(
         onRefresh: fetchAndSetBookings,
         key: _refreshIndicatorKey,
-        child: new Center(
-            child: widget),
+        child: new Center(child: widget),
       ),
       appBar: new AppBar(
-        title:new Text(scheduleStore.state.currentSchedule?.givenName ??
+        title: new Text(scheduleStore.state.currentSchedule?.givenName ??
             scheduleStore.state.currentSchedule?.name ??
             "Inget Schema valt"),
       ),
@@ -368,22 +371,88 @@ class _SchedulePageState extends State<SchedulePage>
             .dispatch(new SetCurrentScheduleAction(schedule: schedules.first));
         _refreshIndicatorKey.currentState?.show();
       }
-      return _buildEmptyBody(
-          new RaisedButton(
-            onPressed: () => Navigator.of(context).pushNamed(SearchPage.path),
-            child: new Text("Lägg till schema"),
-          )
-      );
+      return _buildEmptyBody(new RaisedButton(
+        onPressed: () => Navigator.of(context).pushNamed(SearchPage.path),
+        child: new Text("Lägg till schema"),
+      ));
     } else if (weeksToDisplay == null || weeksToDisplay.isEmpty) {
       _refreshIndicatorKey.currentState?.show();
-      return _buildEmptyBody(
-          new RaisedButton(
-            onPressed: () {_refreshIndicatorKey.currentState?.show();},
-            child: new Icon(Icons.refresh),
-          )
-      );
+      return _buildEmptyBody(new RaisedButton(
+        onPressed: () {
+          _refreshIndicatorKey.currentState?.show();
+        },
+        child: new Icon(Icons.refresh),
+      ));
     } else {
       return _buildTabbedBody();
     }
+  }
+}
+
+class DualHeaderWithHint extends StatelessWidget {
+  const DualHeaderWithHint({this.name, this.hint, this.showHint});
+
+  final String name;
+  final String hint;
+  final bool showHint;
+
+  Widget _crossFade(Widget first, Widget second, bool isExpanded) {
+    return new AnimatedCrossFade(
+      firstChild: first,
+      secondChild: second,
+      firstCurve: const Interval(0.0, 0.6, curve: Curves.fastOutSlowIn),
+      secondCurve: const Interval(0.4, 1.0, curve: Curves.fastOutSlowIn),
+      sizeCurve: Curves.fastOutSlowIn,
+      crossFadeState:
+          isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final TextTheme textTheme = theme.textTheme;
+
+    return new Row(children: <Widget>[
+      new Expanded(
+        flex: 2,
+        child: new Container(
+          margin: const EdgeInsets.only(left: 24.0),
+          child: new FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: new Text(
+              name,
+              style: textTheme.body1.copyWith(fontSize: 15.0),
+            ),
+          ),
+        ),
+      ),
+    ]);
+  }
+}
+
+typedef Widget DemoItemBodyBuilder<T>(DemoItem<T> item);
+
+class DemoItem<T> {
+  DemoItem({
+    this.name,
+    this.value,
+    this.hint,
+    this.builder,
+  });
+
+  final String name;
+  final String hint;
+  final DemoItemBodyBuilder<T> builder;
+  T value;
+  bool isExpanded = false;
+
+  ExpansionPanelHeaderBuilder get headerBuilder {
+    return (BuildContext context, bool isExpanded) {
+      return new DualHeaderWithHint(
+          name: name, hint: hint, showHint: isExpanded);
+    };
   }
 }

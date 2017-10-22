@@ -9,7 +9,6 @@ import 'SettingsPage.dart';
 
 import 'redux/store.dart';
 import 'redux/app_state.dart';
-import 'redux/actions.dart';
 
 import 'utils/fileStorage.dart';
 
@@ -74,7 +73,7 @@ class _AppState extends State<App> {
         theme: themeStore.state.theme,
         title: appName,
         routes: {
-          SchedulePage.path: (BuildContext context) =>  // Home
+          SchedulePage.path: (BuildContext context) => // Home
               new SchedulePage(title: "Schemavisning"), // Home
           SettingsPage.path: (BuildContext context) =>
               new SettingsPage(title: "Inställningar"),
@@ -93,7 +92,7 @@ Future<Null> _init() async {
   if (scheduleStateString != null) {
     try {
       ScheduleState loadedState =
-      ScheduleState.deserialize(JSON.decode(scheduleStateString));
+          ScheduleState.deserialize(JSON.decode(scheduleStateString));
       loadedState.rebuildSearch();
       scheduleStore = new ScheduleStore(initialState: loadedState);
     } catch (exception, stackTrace) {
@@ -108,8 +107,22 @@ Future<Null> _init() async {
   if (themeStateString != null) {
     try {
       ThemeState loadedState =
-      ThemeState.deserialize(JSON.decode(themeStateString));
+          ThemeState.deserialize(JSON.decode(themeStateString));
       themeStore = new ThemeStore(initialState: loadedState);
+    } catch (exception, stackTrace) {
+      print(exception);
+      print(stackTrace);
+    }
+  }
+
+  ignoreStore = new IgnoreStore();
+  String ignoreStateString = await loadIgnoreStateFromFile();
+
+  if (ignoreStateString != null) {
+    try {
+      IgnoreState loadedState =
+          IgnoreState.deserialize(JSON.decode(ignoreStateString));
+      ignoreStore = new IgnoreStore(initialState: loadedState);
     } catch (exception, stackTrace) {
       print(exception);
       print(stackTrace);

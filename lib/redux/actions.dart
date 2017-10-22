@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/Booking.dart';
 import '../utils/Week.dart';
 import '../utils/ScheduleMeta.dart';
 
@@ -50,4 +51,16 @@ class AddSignature extends Action {
   final Map<String, String> signatures;
 
   AddSignature({this.signatures});
+}
+
+class AddHiddenBooking extends Action {
+  final Booking booking;
+
+  AddHiddenBooking({this.booking});
+}
+
+class RemoveHiddenBooking extends Action {
+  final Booking booking;
+
+  RemoveHiddenBooking({this.booking});
 }

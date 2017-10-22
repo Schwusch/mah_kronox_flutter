@@ -130,3 +130,23 @@ class ScheduleState {
         weeksMap: weeksMapsDeserialized);
   }
 }
+
+class IgnoreState {
+  final Set<String> hiddenBookings;
+
+  IgnoreState({this.hiddenBookings});
+
+  factory IgnoreState.initial() => new IgnoreState(hiddenBookings: new Set());
+
+  IgnoreState apply({Map<String, String> hiddenBookings}) => new IgnoreState(hiddenBookings: hiddenBookings ?? this.hiddenBookings);
+
+  Map<String, dynamic> serialize() {
+    return {
+      "hiddenBookings": hiddenBookings,
+    };
+  }
+
+  static IgnoreState deserialize(Map<String, dynamic> state) {
+    return new IgnoreState(hiddenBookings: state["hiddenBookings"]);
+  }
+}
