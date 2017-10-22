@@ -188,7 +188,7 @@ class _SchedulePageState extends State<SchedulePage>
                 new Text(booking.course),
                 new Text(teachers,
                     style: new TextStyle(
-                        color: themeStore.state.theme.textTheme.caption.color,
+                        color: themeStore.state.theme.textTheme.body1.color,
                         fontWeight: FontWeight.bold)),
                 new Text(booking.moment)
               ],
@@ -257,7 +257,7 @@ class _SchedulePageState extends State<SchedulePage>
                         } else
                           return null;
                       },
-                      body: new Container(), //_buildBookingCard(booking),
+                      body: new Container(),
                       isExpanded: !ignoreStore.state.hiddenBookings
                           .contains(booking.uuid));
                 }).toList()))

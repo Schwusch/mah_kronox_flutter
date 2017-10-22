@@ -81,14 +81,14 @@ class CustomExpansionPanelList extends StatelessWidget{
                     )
                 )
             ),
-            new Container(
-                margin: const EdgeInsetsDirectional.only(end: 8.0),
-                child: new ExpandIcon(
-                    isExpanded: _isChildExpanded(i),
-                    padding: const EdgeInsets.all(10.0),
-                    onPressed: (bool isExpanded) {
+            new SizedBox(
+                height: 50.0,
+                width: 50.0,
+                child: new FlatButton(
+                    child: new Icon(_isChildExpanded(i) ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+                    onPressed: () {
                       if (expansionCallback != null) {
-                        expansionCallback(i, isExpanded);
+                        expansionCallback(i, _isChildExpanded(i));
                       }
                     }
                 )
