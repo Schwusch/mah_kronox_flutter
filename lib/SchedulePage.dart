@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'SearchPage.dart';
 import 'Drawer.dart';
 import 'FullScreenBooking.dart';
+import 'custom_expansion_panel.dart';
 
 import 'utils/fetchBookings.dart';
 import 'utils/Booking.dart';
@@ -167,7 +168,7 @@ class _SchedulePageState extends State<SchedulePage>
             context,
             new MaterialPageRoute(
               builder: (BuildContext context) =>
-              new FullScreenBooking(booking: booking),
+                  new FullScreenBooking(booking: booking),
               fullscreenDialog: true,
             ));
       },
@@ -182,20 +183,19 @@ class _SchedulePageState extends State<SchedulePage>
           ),
           new Flexible(
               child: new Container(
-                child: new Column(
-                  children: <Widget>[
-                    new Text(booking.course),
-                    new Text(teachers,
-                        style: new TextStyle(
-                            color:
-                            themeStore.state.theme.textTheme.caption.color,
-                            fontWeight: FontWeight.bold)),
-                    new Text(booking.moment)
-                  ],
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                ),
-                padding: new EdgeInsets.all(5.0),
-              ))
+            child: new Column(
+              children: <Widget>[
+                new Text(booking.course),
+                new Text(teachers,
+                    style: new TextStyle(
+                        color: themeStore.state.theme.textTheme.caption.color,
+                        fontWeight: FontWeight.bold)),
+                new Text(booking.moment)
+              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            padding: new EdgeInsets.all(5.0),
+          ))
         ],
       ),
     );
@@ -236,23 +236,31 @@ class _SchedulePageState extends State<SchedulePage>
             )),
         new Padding(
             padding: new EdgeInsets.all(5.0),
-            child: new ExpansionPanelList(
+            child: new CustomExpansionPanelList(
+              animationDuration: new Duration(milliseconds: 500),
                 expansionCallback: (int index, bool isExpanded) {
                   setState(() {
-                    if(isExpanded) {
-                      ignoreStore.dispatch(new AddHiddenBooking(booking: bookings[index]));
+                    if (isExpanded) {
+                      ignoreStore.dispatch(
+                          new AddHiddenBooking(booking: bookings[index]));
                     } else {
-                      ignoreStore.dispatch(new RemoveHiddenBooking(booking: bookings[index]));
+                      ignoreStore.dispatch(
+                          new RemoveHiddenBooking(booking: bookings[index]));
                     }
                   });
                 },
                 children: bookings.map((Booking booking) {
-              return new ExpansionPanel(
-                  headerBuilder: (_, __) {return null;},
-                  body: _buildBookingCard(booking),
-                isExpanded: !ignoreStore.state.hiddenBookings.contains(booking.uuid)
-              );
-            }).toList()))
+                  return new ExpansionPanel(
+                      headerBuilder: (_, bool isExpanded) {
+                        if (isExpanded) {
+                          return _buildBookingCard(booking);
+                        } else
+                          return null;
+                      },
+                      body: new Container(), //_buildBookingCard(booking),
+                      isExpanded: !ignoreStore.state.hiddenBookings
+                          .contains(booking.uuid));
+                }).toList()))
       ],
     );
   }
@@ -391,4 +399,3 @@ class _SchedulePageState extends State<SchedulePage>
     }
   }
 }
-
